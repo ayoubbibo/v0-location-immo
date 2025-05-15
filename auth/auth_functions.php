@@ -31,7 +31,7 @@ function registerUser($conn, $username, $email, $password, $phone, $user_type = 
 }
 
 function loginUser($conn, $email, $password) {
-    $sql = "SELECT id, username, email, password, user_type, profile_image FROM users WHERE email = ?";
+    $sql = "SELECT id, username, email, password, user_type, profile_image  FROM users WHERE email = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $email);
     $stmt->execute();
@@ -88,20 +88,9 @@ function logout() {
 }
 
 function getUserData($conn, $user_id) {
-    if (!$conn) {
-        error_log("Database connection is null in getUserData");
-        return null;
-    }
-    
     $sql = "SELECT id, username, email, phone, user_type, profile_image, created_at, last_login 
             FROM users WHERE id = ?";
     $stmt = $conn->prepare($sql);
-    
-    if (!$stmt) {
-        error_log("Failed to prepare statement: " . $conn->error);
-        return null;
-    }
-    
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -157,36 +146,4 @@ function requireAdminPrivileges() {
         header("Location: ../index.php");
         exit;
     }
-}
-
-function updatePassword($conn, $user_id, $current_password, $new_password) {
-    // First verify current password
-    $sql = "SELECT password FROM users WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    if ($result->num_rows === 1) {
-        $user = $result->fetch_assoc();
-        
-        if (password_verify($current_password, $user['password'])) {
-            // Current password is correct, update to new password
-            $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
-            
-            $update_sql = "UPDATE users SET password = ? WHERE id = ?";
-            $update_stmt = $conn->prepare($update_sql);
-            $update_stmt->bind_param("si", $hashed_password, $user_id);
-            
-            if ($update_stmt->execute()) {
-                return ['success' => true];
-            } else {
-                return ['success' => false, 'message' => 'Erreur lors de la mise à jour du mot de passe: ' . $conn->error];
-            }
-        } else {
-            return ['success' => false, 'message' => 'Le mot de passe actuel est incorrect.'];
-        }
-    }
-    
-    return ['success' => false, 'message' => 'Utilisateur non trouvé.'];
 }

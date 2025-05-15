@@ -16,7 +16,7 @@ if (!$user) {
 }
 
 // Get host properties
-$properties_sql = "SELECT * FROM annonce WHERE user_id = ? ORDER BY date_creation DESC";
+$properties_sql = "SELECT * FROM properties WHERE user_id = ? ORDER BY created_at DESC";
 $properties_stmt = $conn->prepare($properties_sql);
 $properties_stmt->bind_param("i", $_SESSION['user_id']);
 $properties_stmt->execute();
@@ -25,7 +25,7 @@ $properties = [];
 while ($row = $properties_result->fetch_assoc()) {
     // Process photos
     $photos = explode(',', $row['photos']);
-    $row['main_photo'] = !empty($photos[0]) ? '../annonces/' . $photos[0] : '../images/default.jpg';
+    $row['main_photo'] = !empty($photos[0]) ? '../properties/' . $photos[0] : '../images/default.jpg';
     
     $properties[] = $row;
 }
@@ -59,7 +59,7 @@ foreach ($bookings as $booking) {
 // Get total earnings
 $earnings_sql = "SELECT SUM(b.total_price) as total_earnings 
                 FROM bookings b 
-                JOIN annonce a ON b.property_id = a.id 
+                JOIN properties a ON b.property_id = a.id 
                 WHERE a.user_id = ? AND b.status IN ('confirmed', 'completed')";
 $earnings_stmt = $conn->prepare($earnings_sql);
 $earnings_stmt->bind_param("i", $_SESSION['user_id']);

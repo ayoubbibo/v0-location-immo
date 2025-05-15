@@ -38,7 +38,7 @@ function createBooking($conn, $property_id, $user_id, $check_in, $check_out, $gu
 
 function isPropertyAvailable($conn, $property_id, $check_in, $check_out) {
     // Check if property exists and is active
-    $property_sql = "SELECT id, date_debut, date_fin FROM annonce WHERE id = ? AND valide = 1";
+    $property_sql = "SELECT id, date_debut, date_fin FROM properties WHERE id = ? AND valide = 1";
     $property_stmt = $conn->prepare($property_sql);
     $property_stmt->bind_param("i", $property_id);
     $property_stmt->execute();
@@ -71,25 +71,25 @@ function isPropertyAvailable($conn, $property_id, $check_in, $check_out) {
     return $booking_result->num_rows === 0;
 }
 
-function getPropertyOwnerId($conn, $property_id) {
-    $sql = "SELECT user_id FROM annonce WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $property_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+// function getPropertyOwnerId($conn, $property_id) {
+//     $sql = "SELECT user_id FROM properties WHERE id = ?";
+//     $stmt = $conn->prepare($sql);
+//     $stmt->bind_param("i", $property_id);
+//     $stmt->execute();
+//     $result = $stmt->get_result();
     
-    if ($result->num_rows === 1) {
-        $row = $result->fetch_assoc();
-        return $row['user_id'];
-    }
+//     if ($result->num_rows === 1) {
+//         $row = $result->fetch_assoc();
+//         return $row['user_id'];
+//     }
     
-    return null;
-}
+//     return null;
+// }
 
 function getUserBookings($conn, $user_id, $status = null) {
-    $sql = "SELECT b.*, a.titre, a.adresse, a.photos, a.tarif 
+    $sql = "SELECT b.*, a.title, a.address, a.photos, a.price 
             FROM bookings b 
-            JOIN annonce a ON b.property_id = a.id 
+            JOIN properties a ON b.property_id = a.id 
             WHERE b.user_id = ?";
     
     if ($status) {
@@ -113,7 +113,7 @@ function getUserBookings($conn, $user_id, $status = null) {
     while ($row = $result->fetch_assoc()) {
         // Process photos
         $photos = explode(',', $row['photos']);
-        $row['main_photo'] = !empty($photos[0]) ? '../annonces/' . $photos[0] : '../images/default.jpg';
+        $row['main_photo'] = !empty($photos[0]) ? '../properties/' . $photos[0] : '../images/default.jpg';
         
         $bookings[] = $row;
     }
@@ -122,9 +122,9 @@ function getUserBookings($conn, $user_id, $status = null) {
 }
 
 function getHostBookings($conn, $host_id, $status = null) {
-    $sql = "SELECT b.*, a.titre, a.adresse, a.photos, a.tarif, u.username, u.email 
+    $sql = "SELECT b.*, a.title, a.address, a.photos, a.price, u.username, u.email 
             FROM bookings b 
-            JOIN annonce a ON b.property_id = a.id 
+            JOIN properties a ON b.property_id = a.id 
             JOIN users u ON b.user_id = u.id 
             WHERE a.user_id = ?";
     
@@ -149,7 +149,7 @@ function getHostBookings($conn, $host_id, $status = null) {
     while ($row = $result->fetch_assoc()) {
         // Process photos
         $photos = explode(',', $row['photos']);
-        $row['main_photo'] = !empty($photos[0]) ? '../annonces/' . $photos[0] : '../images/default.jpg';
+        $row['main_photo'] = !empty($photos[0]) ? '../properties/' . $photos[0] : '../images/default.jpg';
         
         $bookings[] = $row;
     }
@@ -162,7 +162,7 @@ function updateBookingStatus($conn, $booking_id, $status, $user_id = null) {
     if ($user_id) {
         $check_sql = "SELECT b.id 
                      FROM bookings b 
-                     JOIN annonce a ON b.property_id = a.id 
+                     JOIN properties a ON b.property_id = a.id 
                      WHERE b.id = ? AND (b.user_id = ? OR a.user_id = ?)";
         
         $check_stmt = $conn->prepare($check_sql);
@@ -182,9 +182,9 @@ function updateBookingStatus($conn, $booking_id, $status, $user_id = null) {
     
     if ($stmt->execute()) {
         // Get booking details for notification
-        $booking_sql = "SELECT b.*, a.user_id as host_id, a.titre 
+        $booking_sql = "SELECT b.*, a.user_id as host_id, a.title 
                        FROM bookings b 
-                       JOIN annonce a ON b.property_id = a.id 
+                       JOIN properties a ON b.property_id = a.id 
                        WHERE b.id = ?";
         $booking_stmt = $conn->prepare($booking_sql);
         $booking_stmt->bind_param("i", $booking_id);
@@ -198,19 +198,19 @@ function updateBookingStatus($conn, $booking_id, $status, $user_id = null) {
             if ($status === 'confirmed') {
                 // Notify guest that booking is confirmed
                 createNotification($conn, $booking['user_id'], 'booking', 'Réservation confirmée', 
-                                  'Votre réservation pour ' . $booking['titre'] . ' a été confirmée.', 
+                                  'Votre réservation pour ' . $booking['title'] . ' a été confirmée.', 
                                   ['booking_id' => $booking_id]);
             } elseif ($status === 'cancelled') {
                 // Notify appropriate party about cancellation
                 if ($user_id === $booking['user_id']) {
                     // Guest cancelled, notify host
                     createNotification($conn, $booking['host_id'], 'booking', 'Réservation annulée', 
-                                      'Une réservation pour ' . $booking['titre'] . ' a été annulée par le client.', 
+                                      'Une réservation pour ' . $booking['title'] . ' a été annulée par le client.', 
                                       ['booking_id' => $booking_id]);
                 } else {
                     // Host cancelled, notify guest
                     createNotification($conn, $booking['user_id'], 'booking', 'Réservation annulée', 
-                                      'Votre réservation pour ' . $booking['titre'] . ' a été annulée par l\'hôte.', 
+                                      'Votre réservation pour ' . $booking['title'] . ' a été annulée par l\'hôte.', 
                                       ['booking_id' => $booking_id]);
                 }
             }
@@ -223,15 +223,15 @@ function updateBookingStatus($conn, $booking_id, $status, $user_id = null) {
 }
 
 function getBookingDetails($conn, $booking_id, $user_id = null) {
-    $sql = "SELECT b.*, a.titre, a.adresse, a.photos, a.tarif, a.user_id as host_id, 
+    $sql = "SELECT b.*, a.title, a.address, a.photos, a.price, a.area, a.housing_type, a.number_of_rooms, b.host_id as host_id, 
                   h.username as host_name, h.email as host_email, h.phone as host_phone,
                   g.username as guest_name, g.email as guest_email, g.phone as guest_phone
            FROM bookings b 
-           JOIN annonce a ON b.property_id = a.id 
-           JOIN users h ON a.user_id = h.id
+           JOIN properties a ON b.property_id = a.id 
            JOIN users g ON b.user_id = g.id
+           JOIN users h ON b.host_id = h.id
            WHERE b.id = ?";
-    
+
     if ($user_id) {
         $sql .= " AND (b.user_id = ? OR a.user_id = ?)";
     }
@@ -252,9 +252,9 @@ function getBookingDetails($conn, $booking_id, $user_id = null) {
         
         // Process photos
         $photos = explode(',', $booking['photos']);
-        $booking['main_photo'] = !empty($photos[0]) ? '../annonces/' . $photos[0] : '../images/default.jpg';
+        $booking['main_photo'] = !empty($photos[0]) ? '../properties/' . $photos[0] : '../images/default.jpg';
         $booking['all_photos'] = array_map(function($photo) {
-            return '../annonces/' . $photo;
+            return '../properties/' . $photo;
         }, $photos);
         
         return $booking;
@@ -270,6 +270,8 @@ function createNotification($conn, $user_id, $type, $title, $message, $data = []
             VALUES (?, ?, ?, ?, ?, NOW())";
     
     $stmt = $conn->prepare($sql);
+    
+    // Correct the bind_param call
     $stmt->bind_param("issss", $user_id, $type, $title, $message, $data_json);
     
     return $stmt->execute();

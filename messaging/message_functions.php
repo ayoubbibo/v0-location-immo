@@ -189,14 +189,14 @@ function getConversationDetails($conn, $conversation_id, $user_id) {
     return null;
 }
 
-function createNotification($conn, $user_id, $type, $title, $message, $data = []) {
-    $data_json = json_encode($data);
+// function createNotification($conn, $user_id, $type, $title, $message, $data = []) {
+//     $data_json = json_encode($data);
     
-    $sql = "INSERT INTO notifications (user_id, type, title, message, data, created_at) 
-            VALUES (?, ?, ?, ?, ?, NOW())";
+//     $sql = "INSERT INTO notifications (user_id, type, title, message, data, created_at) 
+//             VALUES (?, ?, ?, ?, ?, NOW())";
     
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("issss", $user_id, $type, $title, $message, $data_json);
+//     $stmt = $conn->prepare($sql);
+//     $stmt->bind_param("issss", $user_id, $type, $title, $message, $data_json);
     
-    return $stmt->execute();
-}
+//     return $stmt->execute();
+// }

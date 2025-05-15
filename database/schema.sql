@@ -1,3 +1,26 @@
+-- Properties Table
+CREATE TABLE properties (
+    id INT(11) NOT NULL AUTO_INCREMENT,
+    title VARCHAR(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+    address VARCHAR(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+    housing_type VARCHAR(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+    area VARCHAR(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+    number_of_rooms INT(50) NOT NULL,
+    number_of_people INT(50) NOT NULL,
+    amenities TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+    other_amenities VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+    price INT(11) NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    photos VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+    identity_document VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+    property_deed VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+    validated TINYINT(1) DEFAULT 0,
+    rating DECIMAL(3, 2) DEFAULT 0,
+    review_count INT DEFAULT 0,
+    PRIMARY KEY (id)
+);
+
 -- Users Table
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -24,7 +47,7 @@ CREATE TABLE bookings (
     status ENUM('pending', 'confirmed', 'cancelled', 'completed') DEFAULT 'pending',
     created_at DATETIME NOT NULL,
     updated_at DATETIME,
-    FOREIGN KEY (property_id) REFERENCES annonce(id),
+    FOREIGN KEY (property_id) REFERENCES properties(id),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
@@ -37,7 +60,7 @@ CREATE TABLE reviews (
     rating INT NOT NULL,
     comment TEXT NOT NULL,
     created_at DATETIME NOT NULL,
-    FOREIGN KEY (property_id) REFERENCES annonce(id),
+    FOREIGN KEY (property_id) REFERENCES properties(id),
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (booking_id) REFERENCES bookings(id)
 );
@@ -82,8 +105,19 @@ CREATE TABLE notifications (
     created_at DATETIME NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+-- Favoris Table
+CREATE TABLE IF NOT EXISTS `favoris` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `property_id` int(11) NOT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_property` (`user_id`,`property_id`),
+  KEY `user_id` (`user_id`),
+  KEY `property_id` (`property_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Add columns to annonce table
-ALTER TABLE annonce
-ADD COLUMN rating DECIMAL(3, 2) DEFAULT 0,
-ADD COLUMN review_count INT DEFAULT 0;
+-- Add columns to properties table
+ALTER TABLE properties
+ADD COLUMN created_at DATETIME NOT NULL,
+

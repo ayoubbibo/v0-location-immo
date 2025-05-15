@@ -11,22 +11,24 @@ $offset = isset($_GET['offset']) ? intval($_GET['offset']) : 0;
 $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 3;
 
 // Get database connection
-$conn = getDbConnection();
+$conn = new mysqli($config['db_host'], $config['db_user'], $config['db_pass'], $config['db_name']);
+if ($conn->connect_error) {
+    die("Connexion échouée : " . $conn->connect_error);
+}
 
-// Get properties
+// Get more properties
 $properties = getAllProperties($conn, $limit, $offset);
 
-// Output HTML for each property
+// Generate HTML for each property
 foreach ($properties as $property) {
-    $photos = explode(',', $property['photos']);
-    $photo = !empty($photos[0]) ? '../annonces/' . $photos[0] : '../images/default.jpg';
+    $photo = getMainPhotoUrl($property['photos']);
     $is_favorite = $logged_in ? isPropertyInFavorites($conn, $_SESSION['user_id'], $property['id']) : false;
     ?>
     <div class="propriete-cart">
         <div class="image-container">
             <img src="<?= htmlspecialchars($photo) ?>" alt="<?= htmlspecialchars($property['titre']) ?>">
             <?php if ($logged_in): ?>
-                <i class="<?= $is_favorite ? 'fas' : 'far' ?> fa-heart heart-icon" data-property-id="<?= $property['id'] ?>"></i>
+                <i class="<?= $is_favorite ? 'fas' : 'far' ?> fa-heart heart-icon" data-property-id="<?= $property['id'] ?>" data-initialized="false"></i>
             <?php else: ?>
                 <i class="far fa-heart heart-icon" onclick="redirectToLogin()"></i>
             <?php endif; ?>
@@ -41,7 +43,7 @@ foreach ($properties as $property) {
             </div>
             <div class="prix-row">
                 <span class="prix"><?= htmlspecialchars($property['tarif']) ?> DA/nuit</span>
-                <a href="../detail_bien.php?id=<?= $property['id'] ?>">
+                <a href="detail_bien.php?id=<?= $property['id'] ?>">
                     <button class="button4">Voir les détails</button>
                 </a>
             </div>
@@ -49,3 +51,5 @@ foreach ($properties as $property) {
     </div>
     <?php
 }
+
+$conn->close();

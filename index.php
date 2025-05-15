@@ -26,207 +26,6 @@ $properties = getAllProperties($conn);
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
-  <style>
-    /* Additional styles for search functionality */
-    .search-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      z-index: 1001;
-      display: none;
-    }
-    
-    .search-loading {
-      display: none;
-      text-align: center;
-      padding: 20px;
-    }
-    
-    .search-loading i {
-      font-size: 2rem;
-      color: #ff385c;
-      animation: spin 1s infinite linear;
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    .search-results-info {
-      background-color: #fff;
-      padding: 15px;
-      margin-bottom: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      display: none;
-    }
-    
-    .search-results-info h3 {
-      margin: 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
-    .reset-search-btn {
-      background-color: #f0f0f0;
-      border: none;
-      padding: 8px 15px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: background-color 0.3s;
-    }
-    
-    .reset-search-btn:hover {
-      background-color: #e0e0e0;
-    }
-    
-    .no-results {
-      text-align: center;
-      padding: 40px 20px;
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-    
-    .no-results i {
-      font-size: 3rem;
-      color: #ff385c;
-      margin-bottom: 15px;
-    }
-    
-    .no-results p {
-      font-size: 1.2rem;
-      margin-bottom: 20px;
-    }
-    
-    .search-filters {
-      display: flex;
-      gap: 10px;
-      overflow-x: auto;
-      padding: 10px 0;
-      margin-bottom: 15px;
-    }
-    
-    .search-filter {
-      background-color: #f7f7f7;
-      border: 1px solid #ddd;
-      border-radius: 20px;
-      padding: 5px 15px;
-      font-size: 0.9rem;
-      white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    
-    .search-filter i {
-      cursor: pointer;
-      color: #666;
-    }
-    
-    .search-filter i:hover {
-      color: #ff385c;
-    }
-    
-    /* Enhanced search form */
-    .barre-de-recherche {
-      background-color: #fff;
-      border-radius: 40px;
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-      padding: 10px;
-      max-width: 900px;
-      margin: 0 auto;
-      position: relative;
-      z-index: 10;
-    }
-    
-    .search-form {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    
-    .search-input-group {
-      flex: 1;
-      min-width: 150px;
-      padding: 10px 15px;
-      border-right: 1px solid #eee;
-    }
-    
-    .search-input-group:last-of-type {
-      border-right: none;
-    }
-    
-    .search-input-group label {
-      display: block;
-      font-size: 0.8rem;
-      font-weight: 600;
-      margin-bottom: 5px;
-      color: #333;
-    }
-    
-    .search-input-group input,
-    .search-input-group select {
-      width: 100%;
-      border: none;
-      font-size: 1rem;
-      color: #333;
-      background: transparent;
-    }
-    
-    .search-input-group input:focus,
-    .search-input-group select:focus {
-      outline: none;
-    }
-    
-    .search-button-container {
-      padding: 0 10px;
-    }
-    
-    .button3 {
-      background-color: #ff385c;
-      color: white;
-      border: none;
-      border-radius: 24px;
-      padding: 12px 24px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.2s, background-color 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .button3:hover {
-      background-color: #e61e4d;
-      transform: scale(1.05);
-    }
-    
-    @media (max-width: 768px) {
-      .search-input-group {
-        flex: 100%;
-        border-right: none;
-        border-bottom: 1px solid #eee;
-      }
-      
-      .search-input-group:last-of-type {
-        border-bottom: none;
-      }
-      
-      .search-button-container {
-        width: 100%;
-        padding: 10px 0 0;
-        display: flex;
-        justify-content: center;
-      }
-    }
-  </style>
 </head>
 
 <body>
@@ -234,7 +33,7 @@ $properties = getAllProperties($conn);
   <nav class="nav-barre">
     <div class="logo-container">
       <a href="index.php">
-        <img class="Logo" src="images/Logo.png" alt="Logo" />
+        <img class="Logo" src="images/LogoBlack.png" alt="Logo" />
       </a>
     </div>
 
@@ -253,7 +52,7 @@ $properties = getAllProperties($conn);
         $profile_image = !empty($user_data['profile_image']) ? $user_data['profile_image'] : 'images/default-profile.jpg';
       ?>
         <div class="user-info">
-          <a href="profile/dashboard.php">
+          <a href="profile/profile_dashboard.php">
             <button class="button-profile">
               <img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture" class="profile-pic" />
               <span><?= htmlspecialchars($_SESSION['username']) ?></span>
@@ -267,17 +66,17 @@ $properties = getAllProperties($conn);
     </div>
   </nav>
 
-  <div class="image-fond">
-    <div id="Rechercher" class="phrase">
-      <h1 class="la-phrase">Trouvez votre logement <br />de location en Algérie.</h1>
-      <h3 class="phrase2">Des milliers de Propriétés à louer dans toute l'Algérie</h3>
+  <div id="Accueil" class="image-fond">
+    <div  class="phrase">
+      <h1 class="la-phrase">Trouvez votre logement <br/>de location en Algérie.</h1>
+      <h3  id="Rechercher" class="phrase2">Des milliers de Propriétés à louer dans toute l'Algérie</h3>
     </div>
 
-    <div id="Accueil" class="barre-de-recherche">
+    <div class="barre-de-recherche">
       <form id="search-form" class="search-form">
         <div class="search-input-group">
-          <label for="adresse">Destination</label>
-          <input class="bdr" type="text" name="adresse" id="adresse" placeholder="Où allez-vous ?" />
+          <label for="address">Destination</label>
+          <input class="bdr" type="text" name="address" id="address" placeholder="Où allez-vous ?" />
         </div>
         
         <div class="search-input-group">
@@ -314,7 +113,7 @@ $properties = getAllProperties($conn);
     </div>
   </div>
 
-  <section id="Proprietes" class="proprietes-section">
+  <section id="Propriétés" class="proprietes-section">
     <div class="search-results-info">
       <h3>
         <span id="search-results-count"></span>
@@ -328,7 +127,7 @@ $properties = getAllProperties($conn);
       <p>Recherche en cours...</p>
     </div>
     
-    <h2>Nos Propriétés Disponibles</h2>
+    <h2 id="Propriétés" >Nos Propriétés Disponibles</h2>
     <div class="propriete-list">
       <?php if (!empty($properties)): ?>
         <?php foreach ($properties as $property):
@@ -338,7 +137,7 @@ $properties = getAllProperties($conn);
         ?>
           <div class="propriete-cart">
             <div class="image-container">
-              <img src="<?= htmlspecialchars($photo) ?>" alt="<?= htmlspecialchars($property['titre']) ?>">
+              <img src="<?= htmlspecialchars($photo) ?>" alt="<?= htmlspecialchars($property['title']) ?>">
               <?php if ($logged_in): ?>
                 <i class="<?= $is_favorite ? 'fas' : 'far' ?> fa-heart heart-icon" data-property-id="<?= $property['id'] ?>"></i>
               <?php else: ?>
@@ -347,15 +146,15 @@ $properties = getAllProperties($conn);
             </div>
 
             <div class="propriete-cont">
-              <h3><?= htmlspecialchars($property['titre']) ?></h3>
-              <p class="localisation">📍 <?= htmlspecialchars($property['adresse']) ?></p>
+              <h3><?= htmlspecialchars($property['title']) ?></h3>
+              <p class="localisation">📍 <?= htmlspecialchars($property['address']) ?></p>
               <div class="details">
-                <span>🏠 <?= htmlspecialchars($property['supperficie']) ?>m²</span>
-                <span>🛏️ <?= htmlspecialchars($property['nombre_pieces']) ?> ch</span>
+                <span>🏠 <?= htmlspecialchars($property['area']) ?>m²</span>
+                <span>🛏️ <?= htmlspecialchars($property['number_of_rooms']) ?> ch</span>
               </div>
               <div class="prix-row">
-                <span class="prix"><?= htmlspecialchars($property['tarif']) ?> DA/nuit</span>
-                <a href="detail_bien.php?id=<?= $property['id'] ?>">
+                <span class="prix"><?= htmlspecialchars($property['price']) ?> DA/nuit</span>
+                <a href="property/property_details.php?id=<?= $property['id'] ?>">
                   <button class="button4">Voir les détails</button>
                 </a>
               </div>
@@ -383,7 +182,7 @@ $properties = getAllProperties($conn);
   <section>
     <div class="nous">
       <div class="text">
-        <div class="titre">
+        <div class="title">
           <span class="ligne"></span>
           <h4>Qui nous sommes</h4>
         </div>
@@ -397,7 +196,7 @@ $properties = getAllProperties($conn);
   
   <div class="mission">
     <div class="text2">
-      <div class="titre2">
+      <div class="title2">
         <span class="ligne"></span>
         <h4>Notre mission</h4>
       </div>
@@ -409,7 +208,7 @@ $properties = getAllProperties($conn);
 
   <div class="search-overlay"></div>
 
-  <footer id="Propriétés">
+  <footer>
     <div class="footer-div">
 
       <div>
@@ -570,7 +369,7 @@ $properties = getAllProperties($conn);
         searchFilters.innerHTML = '';
         
         const filterLabels = {
-          'adresse': 'Destination',
+          'address': 'Destination',
           'date_debut': 'Arrivée',
           'date_fin': 'Départ',
           'type_logement': 'Type',
@@ -602,6 +401,7 @@ $properties = getAllProperties($conn);
         // Show loading state
         searchLoading.style.display = 'block';
         searchOverlay.style.display = 'block';
+        
         
         // Build query string
         const queryString = Object.keys(params)
@@ -635,7 +435,7 @@ $properties = getAllProperties($conn);
             if (loadMoreButton) {
               loadMoreButton.style.display = data.count > 0 ? 'block' : 'none';
             }
-            
+
             // Update URL
             updateURL(params);
           })

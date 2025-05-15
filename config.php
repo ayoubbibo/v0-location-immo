@@ -2,7 +2,7 @@
 // Database configuration
 $config = [
     'db_host' => 'localhost',
-    'db_name' => 'location_immobiliere',
+    'db_name' => 'property_location',
     'db_user' => 'root',
     'db_pass' => '',
 ];
@@ -16,21 +16,22 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Connect to database
-function getDbConnection() {
+function getDbConnection()
+{
     global $config;
     $conn = new mysqli(
-        $config['db_host'], 
-        $config['db_user'], 
-        $config['db_pass'], 
+        $config['db_host'],
+        $config['db_user'],
+        $config['db_pass'],
         $config['db_name']
     );
-    
+
     if ($conn->connect_error) {
         die("Connexion échouée : " . $conn->connect_error);
     }
-    
+
     // Set charset
     $conn->set_charset("utf8mb4");
-    
+
     return $conn;
 }

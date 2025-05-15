@@ -11,10 +11,10 @@
  * @return array Array of properties
  */
 function getAllProperties($conn, $limit = 6, $offset = 0, $valid_only = true) {
-    $sql = "SELECT * FROM annonce";
+    $sql = "SELECT * FROM properties";
     
     if ($valid_only) {
-        $sql .= " WHERE valide = 1";
+        $sql .= " WHERE validated = 1";
     }
     
     $sql .= " ORDER BY id DESC";
@@ -47,7 +47,7 @@ function getAllProperties($conn, $limit = 6, $offset = 0, $valid_only = true) {
  */
 function getPropertyById($conn, $property_id) {
     $sql = "SELECT a.*, u.username as owner_name, u.email as owner_email, u.phone as owner_phone 
-            FROM annonce a 
+            FROM properties a 
             LEFT JOIN users u ON a.user_id = u.id 
             WHERE a.id = ?";
     
@@ -71,60 +71,60 @@ function getPropertyById($conn, $property_id) {
  * @return array Array of properties matching criteria
  */
 function searchProperties($conn, $criteria) {
-    $sql = "SELECT * FROM annonce WHERE valide = 1";
+    $sql = "SELECT * FROM properties WHERE validated = 1";
     $types = "";
     $params = [];
     
-    if (!empty($criteria['adresse'])) {
-        $sql .= " AND (adresse LIKE ? OR ville LIKE ? OR titre LIKE ?)";
-        $search_term = "%" . $criteria['adresse'] . "%";
+
+
+    if (!empty($criteria['address'])) {
+        $sql .= " AND (address LIKE ?)";
+        $search_term = "%" . $criteria['address'] . "%";
         $types .= "sss";
         $params[] = $search_term;
-        $params[] = $search_term;
-        $params[] = $search_term;
     }
     
-    if (!empty($criteria['type_logement'])) {
-        $sql .= " AND type_logement = ?";
-        $types .= "s";
-        $params[] = $criteria['type_logement'];
-    }
+    // if (!empty($criteria['type_logement'])) {
+    //     $sql .= " AND type_logement = ?";
+    //     $types .= "s";
+    //     $params[] = $criteria['type_logement'];
+    // }
     
-    if (!empty($criteria['nombre_personnes']) && $criteria['nombre_personnes'] > 0) {
-        $sql .= " AND capacite >= ?";
-        $types .= "i";
-        $params[] = $criteria['nombre_personnes'];
-    }
+    // if (!empty($criteria['nombre_personnes']) && $criteria['nombre_personnes'] > 0) {
+    //     $sql .= " AND capacite >= ?";
+    //     $types .= "i";
+    //     $params[] = $criteria['nombre_personnes'];
+    // }
     
-    if (!empty($criteria['date_debut']) && !empty($criteria['date_fin'])) {
-        // Check availability by excluding properties with overlapping bookings
-        $sql .= " AND id NOT IN (
-            SELECT annonce_id FROM reservations 
-            WHERE (date_debut <= ? AND date_fin >= ?) 
-            OR (date_debut <= ? AND date_fin >= ?) 
-            OR (date_debut >= ? AND date_fin <= ?)
-            AND statut IN ('confirmed', 'pending')
-        )";
-        $types .= "ssssss";
-        $params[] = $criteria['date_fin'];
-        $params[] = $criteria['date_debut'];
-        $params[] = $criteria['date_debut'];
-        $params[] = $criteria['date_fin'];
-        $params[] = $criteria['date_debut'];
-        $params[] = $criteria['date_fin'];
-    }
+    // if (!empty($criteria['date_debut']) && !empty($criteria['date_fin'])) {
+    //     // Check availability by excluding properties with overlapping bookings
+    //     $sql .= " AND id NOT IN (
+    //         SELECT property_id FROM reservations 
+    //         WHERE (date_debut <= ? AND date_fin >= ?) 
+    //         OR (date_debut <= ? AND date_fin >= ?) 
+    //         OR (date_debut >= ? AND date_fin <= ?)
+    //         AND statut IN ('confirmed', 'pending')
+    //     )";
+    //     $types .= "ssssss";
+    //     $params[] = $criteria['date_fin'];
+    //     $params[] = $criteria['date_debut'];
+    //     $params[] = $criteria['date_debut'];
+    //     $params[] = $criteria['date_fin'];
+    //     $params[] = $criteria['date_debut'];
+    //     $params[] = $criteria['date_fin'];
+    // }
     
-    if (!empty($criteria['prix_min']) && $criteria['prix_min'] > 0) {
-        $sql .= " AND tarif >= ?";
-        $types .= "d";
-        $params[] = $criteria['prix_min'];
-    }
+    // if (!empty($criteria['prix_min']) && $criteria['prix_min'] > 0) {
+    //     $sql .= " AND tarif >= ?";
+    //     $types .= "d";
+    //     $params[] = $criteria['prix_min'];
+    // }
     
-    if (!empty($criteria['prix_max']) && $criteria['prix_max'] > 0) {
-        $sql .= " AND tarif <= ?";
-        $types .= "d";
-        $params[] = $criteria['prix_max'];
-    }
+    // if (!empty($criteria['prix_max']) && $criteria['prix_max'] > 0) {
+    //     $sql .= " AND tarif <= ?";
+    //     $types .= "d";
+    //     $params[] = $criteria['prix_max'];
+    // }
     
     $sql .= " ORDER BY id DESC";
     
@@ -153,8 +153,8 @@ function searchProperties($conn, $criteria) {
  * @return array Array of featured properties
  */
 function getFeaturedProperties($conn, $limit = 6) {
-    $sql = "SELECT * FROM annonce 
-            WHERE valide = 1 AND featured = 1 
+    $sql = "SELECT * FROM properties 
+            WHERE validated = 1 AND featured = 1 
             ORDER BY id DESC LIMIT ?";
     
     $stmt = $conn->prepare($sql);
@@ -178,7 +178,7 @@ function getFeaturedProperties($conn, $limit = 6) {
  * @return array Array of properties owned by the user
  */
 function getPropertiesByOwner($conn, $user_id) {
-    $sql = "SELECT * FROM annonce WHERE user_id = ? ORDER BY id DESC";
+    $sql = "SELECT * FROM properties WHERE user_id = ? ORDER BY id DESC";
     
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $user_id);
@@ -201,7 +201,7 @@ function getPropertiesByOwner($conn, $user_id) {
  */
 function getMainPhotoUrl($photos) {
     $photo_array = explode(',', $photos);
-    $photo = !empty($photo_array[0]) ? 'annonces/' . $photo_array[0] : 'images/default.jpg';
+    $photo = !empty($photo_array[0]) ? 'propertiess/' . $photo_array[0] : 'images/default.jpg';
     return $photo;
 }
 
@@ -217,7 +217,7 @@ function getAllPhotoUrls($photos) {
     
     foreach ($photo_array as $photo) {
         if (!empty($photo)) {
-            $photo_urls[] = 'annonces/' . $photo;
+            $photo_urls[] = 'propertiess/' . $photo;
         }
     }
     
@@ -238,7 +238,7 @@ function getAllPhotoUrls($photos) {
  */
 function addToFavorites($conn, $user_id, $property_id) {
     // Check if already in favorites
-    $check_sql = "SELECT id FROM favoris WHERE user_id = ? AND annonce_id = ?";
+    $check_sql = "SELECT id FROM favoris WHERE user_id = ? AND property_id = ?";
     $check_stmt = $conn->prepare($check_sql);
     $check_stmt->bind_param("ii", $user_id, $property_id);
     $check_stmt->execute();
@@ -246,7 +246,7 @@ function addToFavorites($conn, $user_id, $property_id) {
     
     if ($result->num_rows > 0) {
         // Already in favorites, remove it
-        $delete_sql = "DELETE FROM favoris WHERE user_id = ? AND annonce_id = ?";
+        $delete_sql = "DELETE FROM favoris WHERE user_id = ? AND property_id = ?";
         $delete_stmt = $conn->prepare($delete_sql);
         $delete_stmt->bind_param("ii", $user_id, $property_id);
         
@@ -257,7 +257,7 @@ function addToFavorites($conn, $user_id, $property_id) {
         }
     } else {
         // Not in favorites, add it
-        $insert_sql = "INSERT INTO favoris (user_id, annonce_id, date_ajout) VALUES (?, ?, NOW())";
+        $insert_sql = "INSERT INTO favoris (user_id, property_id, date_ajout) VALUES (?, ?, NOW())";
         $insert_stmt = $conn->prepare($insert_sql);
         $insert_stmt->bind_param("ii", $user_id, $property_id);
         
@@ -278,7 +278,7 @@ function addToFavorites($conn, $user_id, $property_id) {
  * @return array Result of the operation
  */
 function removeFromFavorites($conn, $user_id, $property_id) {
-    $sql = "DELETE FROM favoris WHERE user_id = ? AND annonce_id = ?";
+    $sql = "DELETE FROM favoris WHERE user_id = ? AND property_id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ii", $user_id, $property_id);
     
@@ -298,7 +298,7 @@ function removeFromFavorites($conn, $user_id, $property_id) {
  * @return bool True if property is in favorites, false otherwise
  */
 function isPropertyInFavorites($conn, $user_id, $property_id) {
-    $sql = "SELECT id FROM favoris WHERE user_id = ? AND annonce_id = ?";
+    $sql = "SELECT id FROM favoris WHERE user_id = ? AND property_id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ii", $user_id, $property_id);
     $stmt->execute();
@@ -316,8 +316,8 @@ function isPropertyInFavorites($conn, $user_id, $property_id) {
  */
 function getUserFavorites($conn, $user_id) {
     $sql = "SELECT a.* 
-            FROM annonce a 
-            JOIN favoris f ON a.id = f.annonce_id 
+            FROM properties a 
+            JOIN favoris f ON a.id = f.property_id 
             WHERE f.user_id = ? 
             ORDER BY f.date_ajout DESC";
     
@@ -342,10 +342,10 @@ function getUserFavorites($conn, $user_id) {
  * @return int Total number of properties
  */
 function countTotalProperties($conn, $valid_only = true) {
-    $sql = "SELECT COUNT(*) as total FROM annonce";
+    $sql = "SELECT COUNT(*) as total FROM properties";
     
     if ($valid_only) {
-        $sql .= " WHERE valide = 1";
+        $sql .= " WHERE validated = 1";
     }
     
     $result = $conn->query($sql);
@@ -354,32 +354,32 @@ function countTotalProperties($conn, $valid_only = true) {
     return $row['total'];
 }
 
-/**
- * Get property reviews
- * 
- * @param mysqli $conn Database connection
- * @param int $property_id Property ID
- * @return array Array of reviews
- */
-function getPropertyReviews($conn, $property_id) {
-    $sql = "SELECT a.*, u.username, u.profile_image 
-            FROM avis a 
-            JOIN users u ON a.user_id = u.id 
-            WHERE a.annonce_id = ? 
-            ORDER BY a.date_avis DESC";
+// /**
+//  * Get property reviews
+//  * 
+//  * @param mysqli $conn Database connection
+//  * @param int $property_id Property ID
+//  * @return array Array of reviews
+//  */
+// function getPropertyReviews($conn, $property_id) {
+//     $sql = "SELECT a.*, u.username, u.profile_image 
+//             FROM avis a 
+//             JOIN users u ON a.user_id = u.id 
+//             WHERE a.property_id = ? 
+//             ORDER BY a.date_avis DESC";
     
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $property_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+//     $stmt = $conn->prepare($sql);
+//     $stmt->bind_param("i", $property_id);
+//     $stmt->execute();
+//     $result = $stmt->get_result();
     
-    $reviews = [];
-    while ($row = $result->fetch_assoc()) {
-        $reviews[] = $row;
-    }
+//     $reviews = [];
+//     while ($row = $result->fetch_assoc()) {
+//         $reviews[] = $row;
+//     }
     
-    return $reviews;
-}
+//     return $reviews;
+// }
 
 /**
  * Get average rating for a property
@@ -389,7 +389,7 @@ function getPropertyReviews($conn, $property_id) {
  * @return float Average rating
  */
 function getAverageRating($conn, $property_id) {
-    $sql = "SELECT AVG(note) as average FROM avis WHERE annonce_id = ?";
+    $sql = "SELECT AVG(note) as average FROM avis WHERE property_id = ?";
     
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $property_id);
@@ -411,7 +411,7 @@ function getAverageRating($conn, $property_id) {
  */
 function isPropertyAvailable($conn, $property_id, $start_date, $end_date) {
     $sql = "SELECT COUNT(*) as count FROM reservations 
-            WHERE annonce_id = ? 
+            WHERE property_id = ? 
             AND statut IN ('confirmed', 'pending')
             AND (
                 (date_debut <= ? AND date_fin >= ?) 
