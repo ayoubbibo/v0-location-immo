@@ -1,72 +1,118 @@
-/* General Styles */
+* Nettoyage et optimisation du CSS */
+
 body {
-    font-family: 'Nunito', sans-serif;
-    background-color: #f7f7f7;
-    margin: 0;
-    padding: 0;
-    color: #333;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 0;
+  font-family: 'Nunito', sans-serif;
+  background-color: #f7f7f7;
+  color: #333;
 }
 
-a {
-    text-decoration: none;
-    color: inherit;
-}
-
-/* Navigation Bar */
+/* Barre de navigation */
 .nav-barre {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #ffffff;
-    padding: 15px 30px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 80px;
+  padding: 0 80px;
+  background-color: #fff;
+  border-bottom: 1px solid #ebebeb;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-.Logo {
-    height: 20px;
-    background-color: rgba(28, 42, 89, 0.9);
-    border-radius: 5px;
-    padding: 10px 15px;
+.logo-container .Logo {
+  height: 32px;
+  cursor: pointer;
 }
 
-.div-de-ul ul {
-    list-style: none;
-    display: flex;
-    gap: 20px;
+.nav-links ul {
+  display: flex;
+  list-style: none;
+  gap: 24px;
 }
 
-.div-de-ul ul li a {
-    color: #333;
-    font-weight: bold;
+.nav-links a {
+  font-weight: 600;
+  font-size: 14px;
+  color: #222;
+  padding: 12px 0;
+  position: relative;
+}
+.nav-links a:after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #222;
+  transition: width 0.2s;
+}
+.nav-links a:hover:after {
+  width: 100%;
 }
 
-.button1, .button2 {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
+.auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
-.button1 {
-    background-color: #ff5a5f;
-    color: white;
-}
-
-.button1:hover {
-    background-color: #ff3b3f;
-}
-
+.button1,
 .button2 {
-    background-color: #ffffff;
-    color: #ff5a5f;
-    border: 1px solid #ff5a5f;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+.button1 {
+  background-color: transparent;
+  color: #222;
+}
+.button1:hover {
+  background-color: #f7f7f7;
+}
+.button2 {
+  background-color: #ff385c;
+  color: #fff;
+}
+.button2:hover {
+  background-color: #e31c5f;
 }
 
-.button2:hover {
-    background-color: #ff5a5f;
-    color: white;
+.button-profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 5px 5px 12px;
+  border-radius: 21px;
+  border: 1px solid #ddd;
+  background-color: #fff;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
 }
+.button-profile:hover {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.18);
+}
+.profile-pic {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.button-profile span {
+  margin-left: 10px;
+  font-weight: 600;
+  font-size: 16px;
+}
+
 
 /* Dashboard Container */
 .dashboard-container {
@@ -193,6 +239,7 @@ a {
 
 .booking-image, .review-image {
     height: 140px;
+    width: 250px;
     border-radius: 5px;
     margin-right: 15px;
 }
@@ -260,4 +307,214 @@ a {
 
 .footer-links li a {
     color: #333;
+}
+.bookings-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.bookings-header {
+    margin-bottom: 2rem;
+}
+
+.bookings-header h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.bookings-tabs {
+    display: flex;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 2rem;
+}
+
+.tab {
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    font-weight: 600;
+    color: #666;
+    border-bottom: 3px solid transparent;
+}
+
+.tab.active {
+    color: #4a6ee0;
+    border-bottom-color: #4a6ee0;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.booking-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.booking-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.booking-image {
+    height: 200px;
+    overflow: hidden;
+}
+
+.booking-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.booking-content {
+    padding: 1.5rem;
+}
+
+.booking-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.booking-address {
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.booking-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.booking-detail {
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-label {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.detail-value {
+    font-weight: 600;
+}
+
+.booking-status {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.status-pending {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.status-confirmed {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-cancelled {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.status-completed {
+    background: #e0f2f1;
+    color: #00695c;
+}
+
+.booking-price {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.booking-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.booking-action {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    flex: 1;
+}
+
+.primary-action {
+    background: #4a6ee0;
+    color: white;
+    border: none;
+}
+
+.primary-action:hover {
+    background: #3a5ecc;
+}
+
+.secondary-action {
+    background: white;
+    color: #4a6ee0;
+    border: 1px solid #4a6ee0;
+}
+
+.secondary-action:hover {
+    background: #f5f7ff;
+}
+
+.danger-action {
+    background: white;
+    color: #c62828;
+    border: 1px solid #c62828;
+}
+
+.danger-action:hover {
+    background: #ffebee;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #666;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #ccc;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .bookings-tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    
+    .booking-list {
+        grid-template-columns: 1fr;
+    }
 }

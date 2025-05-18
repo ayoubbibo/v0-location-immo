@@ -4,7 +4,7 @@ require_once 'auth/auth_functions.php';
 require_once 'property/property_functions.php';
 
 // Check if user is logged in
-$logged_in = isLoggedIn();
+$logged_in = isset($_SESSION['user_id']);
 
 // Get database connection
 $conn = getDbConnection();
@@ -46,15 +46,11 @@ $properties = getAllProperties($conn);
     </div>
 
     <div class="auth-buttons">
-      <?php
-      if ($logged_in): // Check if user is logged in
-        $user_data = getUserData($conn, $_SESSION['user_id']);
-        $profile_image = !empty($user_data['profile_image']) ? $user_data['profile_image'] : 'images/default-profile.jpg';
-      ?>
+      <?php if ($logged_in): ?>
         <div class="user-info">
           <a href="profile/profile_dashboard.php">
             <button class="button-profile">
-              <img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile Picture" class="profile-pic" />
+              <img src="<?php echo htmlspecialchars($_SESSION['profile_image'] ?? 'images/default-profile.jpg'); ?>" alt="Profile Picture" class="profile-pic" />
               <span><?= htmlspecialchars($_SESSION['username']) ?></span>
             </button>
           </a>
@@ -67,31 +63,31 @@ $properties = getAllProperties($conn);
   </nav>
 
   <div id="Accueil" class="image-fond">
-    <div  class="phrase">
-      <h1 class="la-phrase">Trouvez votre logement <br/>de location en Algérie.</h1>
-      <h3  id="Rechercher" class="phrase2">Des milliers de Propriétés à louer dans toute l'Algérie</h3>
+    <div id="Rechercher" class="phrase">
+      <h1 class="la-phrase">Trouvez votre logement <br />de location en Algérie.</h1>
+      <h3 class="phrase2">Des milliers de Propriétés à louer dans toute l'Algérie</h3>
     </div>
 
-    <div class="barre-de-recherche">
-      <form id="search-form" class="search-form">
+    <div id="Rechercher" class="search-form-container">
+      <form id="search-form" class="search-form" action="javascript:void(0);">
         <div class="search-input-group">
           <label for="address">Destination</label>
-          <input class="bdr" type="text" name="address" id="address" placeholder="Où allez-vous ?" />
+          <input type="text" name="address" id="address" placeholder="Où allez-vous ?" />
         </div>
         
         <div class="search-input-group">
-          <label for="date_debut">Arrivée</label>
-          <input class="bdr" type="date" name="date_debut" id="date_debut" />
+          <label for="check_in">Check-in</label>
+          <input type="date" name="check_in" id="check_in" />
         </div>
         
         <div class="search-input-group">
-          <label for="date_fin">Départ</label>
-          <input class="bdr" type="date" name="date_fin" id="date_fin" />
+          <label for="check_out">Check-out</label>
+          <input type="date" name="check_out" id="check_out" />
         </div>
         
         <div class="search-input-group">
-          <label for="type_logement">Type de logement</label>
-          <select name="type_logement" id="type_logement" class="bdr">
+          <label for="housing_type">Type de logement</label>
+          <select name="housing_type" id="housing_type">
             <option value="">Tous les types</option>
             <option value="appartement">Appartement</option>
             <option value="maison">Maison</option>
@@ -99,12 +95,12 @@ $properties = getAllProperties($conn);
         </div>
         
         <div class="search-input-group">
-          <label for="nombre_personnes">Voyageurs</label>
-          <input class="bdr" type="number" name="nombre_personnes" id="nombre_personnes" min="1" placeholder="Nombre de personnes" />
+          <label for="number_of_people">Voyageurs</label>
+          <input type="number" name="number_of_people" id="number_of_people" min="1" placeholder="Nombre de personnes" />
         </div>
         
         <div class="search-button-container">
-          <button type="submit" class="button3">
+          <button type="submit" class="search-button">
             <i class="fas fa-search"></i>
             Rechercher
           </button>
@@ -117,7 +113,7 @@ $properties = getAllProperties($conn);
     <div class="search-results-info">
       <h3>
         <span id="search-results-count"></span>
-        <button class="reset-search-btn">Réinitialiser la recherche</button>
+        <button class="reset-search-btn" onclick="resetSearch()">Réinitialiser la recherche</button>
       </h3>
       <div class="search-filters" id="search-filters"></div>
     </div>
@@ -127,15 +123,15 @@ $properties = getAllProperties($conn);
       <p>Recherche en cours...</p>
     </div>
     
-    <h2 id="Propriétés" >Nos Propriétés Disponibles</h2>
-    <div class="propriete-list">
+    <h2>Nos Propriétés Disponibles</h2>
+    <div class="property-grid">
       <?php if (!empty($properties)): ?>
         <?php foreach ($properties as $property):
           $photos = explode(',', $property['photos']);
-          $photo = !empty($photos[0]) ? 'annonces/' . $photos[0] : 'images/default.jpg';
+          $photo = !empty($photos[0]) ? $photos[0] : 'images/default.jpg';      
           $is_favorite = $logged_in ? isPropertyInFavorites($conn, $_SESSION['user_id'], $property['id']) : false;
         ?>
-          <div class="propriete-cart">
+          <div class="property-card">
             <div class="image-container">
               <img src="<?= htmlspecialchars($photo) ?>" alt="<?= htmlspecialchars($property['title']) ?>">
               <?php if ($logged_in): ?>
@@ -145,24 +141,25 @@ $properties = getAllProperties($conn);
               <?php endif; ?>
             </div>
 
-            <div class="propriete-cont">
+            <div class="property-content">
               <h3><?= htmlspecialchars($property['title']) ?></h3>
-              <p class="localisation">📍 <?= htmlspecialchars($property['address']) ?></p>
+              <p class="location">📍 <?= htmlspecialchars($property['address']) ?></p>
               <div class="details">
                 <span>🏠 <?= htmlspecialchars($property['area']) ?>m²</span>
-                <span>🛏️ <?= htmlspecialchars($property['number_of_rooms']) ?> ch</span>
+                <span>🛏️ <?= htmlspecialchars($property['number_of_rooms']) ?> rooms</span>
+                <span>👥 <?= htmlspecialchars($property['number_of_people']) ?> people</span>
               </div>
-              <div class="prix-row">
-                <span class="prix"><?= htmlspecialchars($property['price']) ?> DA/nuit</span>
+              <div class="price-row">
+                <span class="price"><?= htmlspecialchars($property['price']) ?> DA/nuit</span>
                 <a href="property/property_details.php?id=<?= $property['id'] ?>">
-                  <button class="button4">Voir les détails</button>
+                  <button class="view-details-btn">Voir les détails</button>
                 </a>
               </div>
             </div>
           </div>
         <?php endforeach; ?>
       <?php else: ?>
-        <p>Aucune annonce disponible pour le moment.</p>
+        <p>No properties available at the moment.</p>
       <?php endif; ?>
     </div>
     
@@ -171,8 +168,8 @@ $properties = getAllProperties($conn);
     $total_properties = countTotalProperties($conn);
     if ($total_properties > count($properties)):
     ?>
-      <div class="btn-aut">
-        <button id="plus" class="button5">Autres</button>
+      <div class="load-more-container">
+        <button id="load-more-btn" class="load-more-btn" data-offset="<?= count($properties) ?>">Autres</button>
       </div>
     <?php endif; ?>
   </section>
@@ -182,7 +179,7 @@ $properties = getAllProperties($conn);
   <section>
     <div class="nous">
       <div class="text">
-        <div class="title">
+        <div class="titre">
           <span class="ligne"></span>
           <h4>Qui nous sommes</h4>
         </div>
@@ -196,7 +193,7 @@ $properties = getAllProperties($conn);
   
   <div class="mission">
     <div class="text2">
-      <div class="title2">
+      <div class="titre2">
         <span class="ligne"></span>
         <h4>Notre mission</h4>
       </div>
@@ -249,6 +246,7 @@ $properties = getAllProperties($conn);
         <?php if ($logged_in): ?>
           const propertyId = e.target.getAttribute('data-property-id');
           const heartIcon = e.target;
+
           
           fetch('ajax/toggle_favorite.php', {
             method: 'POST',
@@ -259,6 +257,7 @@ $properties = getAllProperties($conn);
           })
           .then(response => response.json())
           .then(data => {
+            console.error("we are here", propertyId);
             if (data.success) {
               heartIcon.classList.toggle('fas');
               heartIcon.classList.toggle('far');
@@ -274,46 +273,72 @@ $properties = getAllProperties($conn);
     });
 
     // Load more properties
-    const loadMoreBtn = document.getElementById('plus');
+    const loadMoreBtn = document.getElementById('load-more-btn');
     if (loadMoreBtn) {
-      let offset = <?= count($properties) ?>;
-      const limit = 3; // Load 3 more properties at a time
-      
       loadMoreBtn.addEventListener('click', function() {
+        const offset = parseInt(this.getAttribute('data-offset'));
+        const limit = 6; // Load 6 more properties at a time
+        
         fetch('ajax/load_more_properties.php?offset=' + offset + '&limit=' + limit)
-          .then(response => response.text())
-          .then(html => {
-            const propertyList = document.querySelector('.propriete-list');
-            propertyList.insertAdjacentHTML('beforeend', html);
-            
-            offset += limit;
-            
-            // Hide button if no more properties
-            if (offset >= <?= $total_properties ?>) {
-              loadMoreBtn.style.display = 'none';
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              // Append new properties to the grid
+              document.querySelector('.property-grid').insertAdjacentHTML('beforeend', data.html);
+              
+              // Update offset
+              this.setAttribute('data-offset', offset + limit);
+              
+              // Hide button if no more properties
+              if (offset + limit >= <?= $total_properties ?>) {
+                this.style.display = 'none';
+              }
             }
-            
-            // Initialize heart icons for newly loaded properties
-            document.querySelectorAll('.heart-icon:not([data-initialized])').forEach(function(heartIcon) {
-              heartIcon.setAttribute('data-initialized', 'true');
-            });
+          })
+          .catch(error => {
+            console.error('Error:', error);
           });
       });
     }
 
-    // In-page search functionality
+    // Search functionality
     document.addEventListener('DOMContentLoaded', function() {
       const searchForm = document.getElementById('search-form');
-      const propertyList = document.querySelector('.propriete-list');
+      const propertyGrid = document.querySelector('.property-grid');
       const searchResultsInfo = document.querySelector('.search-results-info');
       const searchResultsCount = document.getElementById('search-results-count');
       const searchFilters = document.getElementById('search-filters');
       const searchLoading = document.querySelector('.search-loading');
       const searchOverlay = document.querySelector('.search-overlay');
-      const resetSearchBtn = document.querySelector('.reset-search-btn');
-      const loadMoreButton = document.getElementById('plus');
       const sectionTitle = document.querySelector('.proprietes-section h2');
-      
+      const loadMoreContainer = document.querySelector('.load-more-container');
+
+     // Set minimum date for check-in to today
+      const today = new Date().toISOString().split('T')[0];
+      const checkInInput = document.getElementById('check_in');
+      const checkOutInput = document.getElementById('check_out');
+
+      checkInInput.min = today;
+      checkOutInput.min = new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0];
+
+      // If check-out date is already selected and check-in is empty, set check-in to today
+      if (checkOutInput.value && !checkInInput.value) {
+        checkInInput.value = today;
+      }
+
+      // Update check-out min date when check-in changes
+      checkInInput.addEventListener('change', function() {
+        const checkInDate = new Date(this.value);
+        checkInDate.setDate(checkInDate.getDate() + 1);
+        const minCheckOutDate = checkInDate.toISOString().split('T')[0];
+        checkOutInput.min = minCheckOutDate;
+
+        // If check-out date is before new min, update it
+        if (checkOutInput.value && new Date(checkOutInput.value) < checkInDate) {
+          checkOutInput.value = minCheckOutDate;
+        }
+      });
+
       // Function to update URL with search parameters
       function updateURL(params) {
         const url = new URL(window.location.href);
@@ -370,17 +395,24 @@ $properties = getAllProperties($conn);
         
         const filterLabels = {
           'address': 'Destination',
-          'date_debut': 'Arrivée',
-          'date_fin': 'Départ',
-          'type_logement': 'Type',
-          'nombre_personnes': 'Voyageurs'
+          'check_in': 'Check-in',
+          'check_out': 'Check-out',
+          'housing_type': 'Property Type',
+          'number_of_people': 'Guests',
+          'min_price': 'Min Price',
+          'max_price': 'Max Price',
+          'number_of_rooms': 'Rooms',
+          'min_rating': 'Rating'
         };
         
         for (const key in params) {
           if (params[key]) {
-            const filterValue = key === 'type_logement' ? 
-              params[key].charAt(0).toUpperCase() + params[key].slice(1) : 
-              params[key];
+            let filterValue = params[key];
+            
+            // // Format housing_type for display
+            // if (key === 'housing_type') {
+            //   filterValue = filterValue.charAt(0).toUpperCase() + filterValue.slice(1);
+            // }
             
             const filterLabel = filterLabels[key] || key;
             
@@ -402,7 +434,6 @@ $properties = getAllProperties($conn);
         searchLoading.style.display = 'block';
         searchOverlay.style.display = 'block';
         
-        
         // Build query string
         const queryString = Object.keys(params)
           .filter(key => params[key])
@@ -417,8 +448,8 @@ $properties = getAllProperties($conn);
             searchLoading.style.display = 'none';
             searchOverlay.style.display = 'none';
             
-            // Update property list
-            propertyList.innerHTML = data.html;
+            // Update property grid
+            propertyGrid.innerHTML = data.html;
             
             // Update search results info
             if (Object.keys(params).some(key => params[key])) {
@@ -426,16 +457,21 @@ $properties = getAllProperties($conn);
               searchResultsCount.textContent = data.message;
               displaySearchFilters(params);
               sectionTitle.textContent = 'Résultats de recherche';
+              
+              // Hide load more button for search results
+              if (loadMoreContainer) {
+                loadMoreContainer.style.display = 'none';
+              }
             } else {
               searchResultsInfo.style.display = 'none';
               sectionTitle.textContent = 'Nos Propriétés Disponibles';
+              
+              // Show load more button for all properties
+              if (loadMoreContainer) {
+                loadMoreContainer.style.display = 'block';
+              }
             }
             
-            // Hide load more button if no results or all results shown
-            if (loadMoreButton) {
-              loadMoreButton.style.display = data.count > 0 ? 'block' : 'none';
-            }
-
             // Update URL
             updateURL(params);
           })
@@ -460,8 +496,8 @@ $properties = getAllProperties($conn);
         performSearch(params);
       });
       
-      // Handle reset search button
-      resetSearchBtn.addEventListener('click', function() {
+      // Function to reset search
+      window.resetSearch = function() {
         // Clear form
         searchForm.reset();
         
@@ -470,7 +506,7 @@ $properties = getAllProperties($conn);
         
         // Reset search
         performSearch({});
-      });
+      };
       
       // Handle filter removal
       searchFilters.addEventListener('click', function(e) {

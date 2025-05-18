@@ -1,10 +1,13 @@
 <?php
 require_once '../config.php';
 require_once '../auth/auth_functions.php';
-require_once 'review_functions.php';
+require_once '../reviews/review_functions.php';
 
 // Require login
 requireLogin();
+
+// Get database connection
+$conn = getDbConnection();
 
 $error_message = '';
 $success_message = '';
@@ -19,7 +22,7 @@ if (!$property_id) {
 }
 
 // Get property details
-$property_sql = "SELECT * FROM annonce WHERE id = ? AND valide = 1";
+$property_sql = "SELECT * FROM properties WHERE id = ? AND validated = 1";
 $property_stmt = $conn->prepare($property_sql);
 $property_stmt->bind_param("i", $property_id);
 $property_stmt->execute();
@@ -77,7 +80,7 @@ $main_photo = !empty($photos[0]) ? '../annonces/' . $photos[0] : '../images/defa
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ajouter un avis - <?php echo htmlspecialchars($property['titre']); ?></title>
+    <title>Ajouter un avis - <?php echo htmlspecialchars($property['title']); ?></title>
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
@@ -245,15 +248,7 @@ $main_photo = !empty($photos[0]) ? '../annonces/' . $photos[0] : '../images/defa
                 <img class="Logo" src="../images/Logo.png" alt="Logo" />
             </a>
         </div>
-        
-        <div class="div-de-ul">
-            <ul>
-                <li><a href="../index.php#Accueil">Accueil</a></li>
-                <li><a href="../index.php#Rechercher">Rechercher</a></li>
-                <li><a href="../index.php#Propriétés">Propriétés</a></li>
-            </ul>
-        </div>
-        
+    
         <div>
             <?php if (isLoggedIn()): ?>
                 <a href="../profile/dashboard.php"><button class="button1">Mon Compte</button></a>
@@ -282,14 +277,14 @@ $main_photo = !empty($photos[0]) ? '../annonces/' . $photos[0] : '../images/defa
         
         <div class="review-grid">
             <div class="property-details">
-                <img src="<?php echo htmlspecialchars($main_photo); ?>" alt="<?php echo htmlspecialchars($property['titre']); ?>" class="property-image">
+                <img src="<?php echo htmlspecialchars($main_photo); ?>" alt="<?php echo htmlspecialchars($property['title']); ?>" class="property-image">
                 
                 <div class="property-info">
-                    <h2 class="property-title"><?php echo htmlspecialchars($property['titre']); ?></h2>
+                    <h2 class="property-title"><?php echo htmlspecialchars($property['title']); ?></h2>
                     
                     <p class="property-location">
                         <i class="fas fa-map-marker-alt"></i>
-                        <?php echo htmlspecialchars($property['adresse']); ?>
+                        <?php echo htmlspecialchars($property['address']); ?>
                     </p>
                     
                     <p><?php echo nl2br(htmlspecialchars(substr($property['description'], 0, 200))); ?>...</p>

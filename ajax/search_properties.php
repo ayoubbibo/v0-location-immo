@@ -4,7 +4,7 @@ require_once '../auth/auth_functions.php';
 require_once '../property/property_functions.php';
 
 // Check if user is logged in
-$logged_in = isLoggedIn();
+$logged_in = isset($_SESSION['user_id']);
 
 // Get database connection
 $conn = getDbConnection();
@@ -12,15 +12,21 @@ $conn = getDbConnection();
 // Get search parameters
 $criteria = [
     'address' => isset($_GET['address']) ? trim($_GET['address']) : '',
-    // 'date_debut' => isset($_GET['date_debut']) ? trim($_GET['date_debut']) : '',
-    // 'date_fin' => isset($_GET['date_fin']) ? trim($_GET['date_fin']) : '',
-    // 'type_logement' => isset($_GET['type_logement']) ? trim($_GET['type_logement']) : '',
-    // 'nombre_personnes' => isset($_GET['nombre_personnes']) ? intval($_GET['nombre_personnes']) : 0,
-    // 'prix_min' => isset($_GET['prix_min']) ? floatval($_GET['prix_min']) : 0,
-    // 'prix_max' => isset($_GET['prix_max']) ? floatval($_GET['prix_max']) : 0,
+    'check_in' => isset($_GET['check_in']) ? trim($_GET['check_in']) : '',
+    'check_out' => isset($_GET['check_out']) ? trim($_GET['check_out']) : '',
+    'housing_type' => isset($_GET['housing_type']) ? trim($_GET['housing_type']) : '',
+    'number_of_people' => isset($_GET['number_of_people']) ? intval($_GET['number_of_people']) : 0,
+    'min_price' => isset($_GET['min_price']) ? intval($_GET['min_price']) : 0,
+    'max_price' => isset($_GET['max_price']) ? intval($_GET['max_price']) : 0,
+    'number_of_rooms' => isset($_GET['number_of_rooms']) ? intval($_GET['number_of_rooms']) : 0,
+    'amenities' => isset($_GET['amenities']) ? explode(',', $_GET['amenities']) : [],
+    'min_rating' => isset($_GET['min_rating']) ? floatval($_GET['min_rating']) : 0,
+    'order_by' => isset($_GET['order_by']) ? $_GET['order_by'] : 'id',
+    'order_dir' => isset($_GET['order_dir']) ? $_GET['order_dir'] : 'DESC',
+    'limit' => isset($_GET['limit']) ? intval($_GET['limit']) : 0,
+    'offset' => isset($_GET['offset']) ? intval($_GET['offset']) : 0
 ];
 
-echo $criteria;
 // Search properties
 $properties = searchProperties($conn, $criteria);
 
@@ -38,11 +44,10 @@ $response = [
 ob_start();
 if (!empty($properties)) {
     foreach ($properties as $property) {
-        $photos = explode(',', $property['photos']);
-        $photo = !empty($photos[0]) ? '../annonces/' . $photos[0] : '../images/default.jpg';
+        $photo = getMainPhotoUrl($property['photos']);
         $is_favorite = $logged_in ? isPropertyInFavorites($conn, $_SESSION['user_id'], $property['id']) : false;
         ?>
-        <div class="propriete-cart">
+        <div class="property-card">
             <div class="image-container">
                 <img src="<?= htmlspecialchars($photo) ?>" alt="<?= htmlspecialchars($property['title']) ?>">
                 <?php if ($logged_in): ?>
@@ -52,17 +57,18 @@ if (!empty($properties)) {
                 <?php endif; ?>
             </div>
 
-            <div class="propriete-cont">
+            <div class="property-content">
                 <h3><?= htmlspecialchars($property['title']) ?></h3>
-                <p class="localisation">📍 <?= htmlspecialchars($property['address']) ?></p>
+                <p class="location">📍 <?= htmlspecialchars($property['address']) ?></p>
                 <div class="details">
                     <span>🏠 <?= htmlspecialchars($property['area']) ?>m²</span>
                     <span>🛏️ <?= htmlspecialchars($property['number_of_rooms']) ?> ch</span>
+                    <span>👥 <?= htmlspecialchars($property['number_of_people']) ?> personne(s)</span>
                 </div>
-                <div class="prix-row">
-                    <span class="prix"><?= htmlspecialchars($property['price']) ?> DA/nuit</span>
+                <div class="price-row">
+                    <span class="price"><?= htmlspecialchars($property['price']) ?> DA/nuit</span>
                     <a href="../property/property_details.php?id=<?= $property['id'] ?>">
-                        <button class="button4">Voir les détails</button>
+                        <button class="view-details-btn">Voir les détails</button>
                     </a>
                 </div>
             </div>

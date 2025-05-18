@@ -59,20 +59,20 @@ function addReview($conn, $property_id, $user_id, $booking_id, $rating, $comment
     }
 }
 
-function getPropertyOwnerId($conn, $property_id) {
-    $sql = "SELECT user_id FROM properties WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $property_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+// function getPropertyOwnerId($conn, $property_id) {
+//     $sql = "SELECT user_id FROM properties WHERE id = ?";
+//     $stmt = $conn->prepare($sql);
+//     $stmt->bind_param("i", $property_id);
+//     $stmt->execute();
+//     $result = $stmt->get_result();
     
-    if ($result->num_rows === 1) {
-        $row = $result->fetch_assoc();
-        return $row['user_id'];
-    }
+//     if ($result->num_rows === 1) {
+//         $row = $result->fetch_assoc();
+//         return $row['user_id'];
+//     }
     
-    return null;
-}
+//     return null;
+// }
 
 function updatePropertyRating($conn, $property_id) {
     $sql = "SELECT AVG(rating) as avg_rating, COUNT(id) as review_count 
@@ -124,9 +124,10 @@ function getPropertyReviews($conn, $property_id) {
 }
 
 function getUserReviews($conn, $user_id) {
-    $sql = "SELECT r.*, a.title, a.address, a.photos 
+    $sql = "SELECT r.*, a.title, a.address, a.photos, u.username, u.profile_image
             FROM reviews r 
             JOIN properties a ON r.property_id = a.id 
+            JOIN users u ON u.id = r.user_id 
             WHERE r.user_id = ? 
             ORDER BY r.created_at DESC";
     
