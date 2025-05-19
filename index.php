@@ -128,7 +128,13 @@ $properties = getAllProperties($conn);
       <?php if (!empty($properties)): ?>
         <?php foreach ($properties as $property):
           $photos = explode(',', $property['photos']);
-          $photo = !empty($photos[0]) ? $photos[0] : 'images/default.jpg';
+          if (strpos($photos[0], 'http') === 0) {
+            $photo = $photos[0];
+          } else {
+            $photo = !empty($photos[0]) ? '../images/' . $photos[0] : 'images/default.jpg';
+          }
+
+
           $is_favorite = $logged_in ? isPropertyInFavorites($conn, $_SESSION['user_id'], $property['id']) : false;
         ?>
           <div class="property-card">

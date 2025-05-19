@@ -41,7 +41,7 @@ foreach ($photos as $photo) {
         if (strpos($photo, 'http') === 0) {
             $photo_urls[] = $photo;
         } else {
-            $photo_urls[] = '../properties/' . $photo;
+            $photo_urls[] = '../images/' . $photo;
         }
     }
 }

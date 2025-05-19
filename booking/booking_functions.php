@@ -149,7 +149,7 @@ function getHostBookings($conn, $host_id, $status = null) {
     while ($row = $result->fetch_assoc()) {
         // Process photos
         $photos = explode(',', $row['photos']);
-        
+
         if (strpos($photos[0], 'http') !== 0) {
             $row['main_photo'] = !empty($photos[0]) ? '../properties/' . $photos[0] : '../images/default.jpg';
         } else {
@@ -227,45 +227,56 @@ function updateBookingStatus($conn, $booking_id, $status, $user_id = null) {
     }
 }
 
-function getBookingDetails($conn, $booking_id, $user_id = null) {
-    $sql = "SELECT b.*, a.title, a.address, a.photos, a.price, a.area, a.housing_type, a.number_of_rooms, b.host_id as host_id, 
-                  h.username as host_name, h.email as host_email, h.phone as host_phone,
-                  g.username as guest_name, g.email as guest_email, g.phone as guest_phone
-           FROM bookings b 
-           JOIN properties a ON b.property_id = a.id 
-           JOIN users g ON b.user_id = g.id
-           JOIN users h ON b.host_id = h.id
+/**
+ * Get booking details by ID with authorization check
+ * 
+ * @param mysqli $conn Database connection
+ * @param int $booking_id Booking ID
+ * @param int $user_id User ID for authorization
+ * @return array|null Booking details or null if not found or not authorized
+ */
+function getBookingDetails($conn, $booking_id, $user_id) {
+    // Get booking with property and user details
+    $sql = "SELECT b.*, 
+                  p.title, p.address, p.photos, p.housing_type, p.area, p.number_of_rooms, p.price,
+                  p.user_id as host_id,
+                  host.username as host_name, host.email as host_email, host.phone as host_phone,
+                  guest.username as guest_name, guest.email as guest_email, guest.phone as guest_phone
+           FROM bookings b
+           JOIN properties p ON b.property_id = p.id
+           JOIN users host ON p.user_id = host.id
+           JOIN users guest ON b.user_id = guest.id
            WHERE b.id = ?";
-
-    if ($user_id) {
-        $sql .= " AND (b.user_id = ? OR a.user_id = ?)";
-    }
     
     $stmt = $conn->prepare($sql);
-    
-    if ($user_id) {
-        $stmt->bind_param("iii", $booking_id, $user_id, $user_id);
-    } else {
-        $stmt->bind_param("i", $booking_id);
-    }
-    
+    $stmt->bind_param("i", $booking_id);
     $stmt->execute();
     $result = $stmt->get_result();
     
-    if ($result->num_rows === 1) {
-        $booking = $result->fetch_assoc();
-        
-        // Process photos
-        $photos = explode(',', $booking['photos']);
-        $booking['main_photo'] = !empty($photos[0]) ? '../properties/' . $photos[0] : '../images/default.jpg';
-        $booking['all_photos'] = array_map(function($photo) {
-            return '../properties/' . $photo;
-        }, $photos);
-        
-        return $booking;
+    if ($result->num_rows === 0) {
+        return null;
     }
     
-    return null;
+    $booking = $result->fetch_assoc();
+    
+    // Check if user is authorized (either the guest or the host)
+    if ($booking['user_id'] != $user_id && $booking['host_id'] != $user_id) {
+        return null;
+    }
+    
+    // Process photos
+    $photos = explode(',', $booking['photos']);
+    if (!empty($photos[0])) {
+        if (strpos($photos[0], 'http') === 0) {
+            $booking['main_photo'] = $photos[0];
+        } else {
+            $booking['main_photo'] = '../annonces/' . $photos[0];
+        }
+    } else {
+        $booking['main_photo'] = '../images/default.jpg';
+    }
+    
+    return $booking;
 }
 
 function createNotification($conn, $user_id, $type, $title, $message, $data = []) {

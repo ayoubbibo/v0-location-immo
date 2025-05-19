@@ -163,15 +163,11 @@ function getHostReviews($conn, $host_id) {
     
     $reviews = [];
     while ($row = $result->fetch_assoc()) {
-        // Process photos
-        $photos = explode(',', $row['photos']);
-        $row['main_photo'] = !empty($photos[0]) ? '../properties/' . $photos[0] : '../images/default.jpg';
-        
         // Process profile image
         if (empty($row['profile_image'])) {
             $row['profile_image'] = '../images/default-avatar.png';
         } else {
-            $row['profile_image'] = '../uploads/profiles/' . $row['profile_image'];
+            $row['profile_image'] = $row['profile_image'];
         }
         
         $reviews[] = $row;
@@ -225,4 +221,27 @@ function getReviewDetails($conn, $review_id, $user_id = null) {
 
     
     return null;
+}
+
+
+/**
+ * Get average rating for a host (all their properties)
+ * 
+ * @param mysqli $conn Database connection
+ * @param int $host_id Host ID
+ * @return float Average rating
+ */
+function getHostAverageRating($conn, $host_id) {
+    $sql = "SELECT AVG(r.rating) as average 
+            FROM reviews r
+            JOIN properties p ON r.property_id = p.id
+            WHERE p.user_id = ?";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $host_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    
+    return round($row['average'] ?? 0, 1);
 }

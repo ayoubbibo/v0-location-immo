@@ -227,7 +227,7 @@ while ($row = $notifications_result->fetch_assoc()) {
                                         </div>
 
                                         <div class="booking-actions" style="display: flex; flex-direction: column; justify-content: center; padding: 0 15px;">
-                                            <a href="../booking/booking_confirmation.php?id=<?= $booking['id'] ?>" class="btn-action btn-secondary" style="margin-bottom: 10px;">
+                                            <a href="../booking/booking-details.php?id=<?= $booking['id'] ?>" class="btn-action btn-secondary" style="margin-bottom: 10px;">
                                                 <i class="fas fa-eye"></i> Détails
                                             </a>
 

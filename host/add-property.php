@@ -1,0 +1,569 @@
+<?php
+require_once '../config.php';
+require_once '../auth/auth_functions.php';
+
+// Require login
+requireLogin();
+
+// Get database connection
+$conn = getDbConnection();
+
+// Get user data
+$user = getUserData($conn, $_SESSION['user_id']);
+
+// Check if user is a host or admin
+if ($user['user_type'] != 'host' && $user['user_type'] != 'admin') {
+    // Update user to host type
+    $update_sql = "UPDATE users SET user_type = 'host' WHERE id = ?";
+    $update_stmt = $conn->prepare($update_sql);
+    $update_stmt->bind_param("i", $_SESSION['user_id']);
+    $update_stmt->execute();
+}
+
+$error_message = '';
+$success_message = '';
+
+// Process form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Get form data
+    $title = trim($_POST['title'] ?? '');
+    $description = trim($_POST['description'] ?? '');
+    $address = trim($_POST['address'] ?? '');
+    $housing_type = trim($_POST['housing_type'] ?? '');
+    $area = intval($_POST['area'] ?? 0);
+    $number_of_rooms = intval($_POST['number_of_rooms'] ?? 0);
+    $number_of_people = intval($_POST['number_of_people'] ?? 0);
+    $price = floatval($_POST['price'] ?? 0);
+    $start_date = trim($_POST['start_date'] ?? '');
+    $end_date = trim($_POST['end_date'] ?? '');
+    $amenities = isset($_POST['amenities']) ? implode(',', $_POST['amenities']) : '';
+    $other_amenities = trim($_POST['other_amenities'] ?? '');
+    
+    // Validate form data
+    if (empty($title)) {
+        $error_message = 'Le titre est obligatoire.';
+    } elseif (empty($description)) {
+        $error_message = 'La description est obligatoire.';
+    } elseif (empty($address)) {
+        $error_message = 'L\'adresse est obligatoire.';
+    } elseif (empty($housing_type)) {
+        $error_message = 'Le type de logement est obligatoire.';
+    } elseif ($area <= 0) {
+        $error_message = 'La superficie doit être supérieure à 0.';
+    } elseif ($number_of_rooms <= 0) {
+        $error_message = 'Le nombre de pièces doit être supérieur à 0.';
+    } elseif ($number_of_people <= 0) {
+        $error_message = 'Le nombre de personnes doit être supérieur à 0.';
+    } elseif ($price <= 0) {
+        $error_message = 'Le prix doit être supérieur à 0.';
+    } elseif (empty($start_date) || empty($end_date)) {
+        $error_message = 'Les dates de disponibilité sont obligatoires.';
+    } elseif (strtotime($start_date) >= strtotime($end_date)) {
+        $error_message = 'La date de fin doit être après la date de début.';
+    } else {
+        // Handle photo uploads
+        $photos = [];
+        $upload_dir = '../annonces/';
+        
+        // Create directory if it doesn't exist
+        if (!file_exists($upload_dir)) {
+            mkdir($upload_dir, 0777, true);
+        }
+        
+        if (isset($_FILES['photos']) && !empty($_FILES['photos']['name'][0])) {
+            $file_count = count($_FILES['photos']['name']);
+            
+            for ($i = 0; $i < $file_count; $i++) {
+                $file_name = $_FILES['photos']['name'][$i];
+                $file_tmp = $_FILES['photos']['tmp_name'][$i];
+                $file_error = $_FILES['photos']['error'][$i];
+                
+                if ($file_error === UPLOAD_ERR_OK) {
+                    $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+                    $allowed_exts = ['jpg', 'jpeg', 'png', 'gif'];
+                    
+                    if (in_array($file_ext, $allowed_exts)) {
+                        $new_file_name = uniqid() . '.' . $file_ext;
+                        $destination = $upload_dir . $new_file_name;
+                        
+                        if (move_uploaded_file($file_tmp, $destination)) {
+                            $photos[] = $new_file_name;
+                        }
+                    }
+                }
+            }
+        }
+        
+        $photos_str = implode(',', $photos);
+        
+        // Insert property into database
+        $sql = "INSERT INTO properties (
+                    user_id, title, description, address, housing_type, area, 
+                    number_of_rooms, number_of_people, price, start_date, end_date, 
+                    amenities, other_amenities, photos, validated, created_at
+                ) VALUES (
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW()
+                )";
+        
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param(
+            "issssiiidsssss",
+            $_SESSION['user_id'], $title, $description, $address, $housing_type, $area,
+            $number_of_rooms, $number_of_people, $price, $start_date, $end_date,
+            $amenities, $other_amenities, $photos_str
+        );
+        
+        if ($stmt->execute()) {
+            $property_id = $conn->insert_id;
+            $success_message = 'Votre propriété a été ajoutée avec succès.';
+            
+            // Redirect to property details page
+            header("Location: ../property/property_details.php?id=$property_id");
+            exit;
+        } else {
+            $error_message = 'Erreur lors de l\'ajout de la propriété: ' . $conn->error;
+        }
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajouter une propriété - MN Home DZ</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="icon" href="../images/Logo.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
+    <style>
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .form-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .form-header h1 {
+            font-size: 2rem;
+            color: #333;
+        }
+        
+        .form-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+        
+        .form-section {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .form-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .form-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        
+        .form-control:focus {
+            border-color: #ff385c;
+            outline: none;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .amenities-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .amenity-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .amenity-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .photo-upload {
+            margin-bottom: 1rem;
+        }
+        
+        .photo-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .preview-item {
+            position: relative;
+            height: 150px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .preview-remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .btn-submit {
+            background: #ff385c;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+        
+        .btn-submit:hover {
+            background: #e0314d;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .alert-danger {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="nav-barre">
+        <div class="logo-container">
+            <a href="../index.php">
+                <img class="Logo" src="../images/LogoBlack.png" alt="Logo" />
+            </a>
+        </div>
+
+        <div>
+            <?php if (isLoggedIn()): ?>
+                <a href="../profile/profile_dashboard.php"><button class="button1">Mon Compte</button></a>
+                <a href="../logins/logout.php"><button class="button2">Déconnexion</button></a>
+            <?php else: ?>
+                <a href="../logins/connexion.php"><button class="button1">Connexion</button></a>
+                <a href="../logins/formulaire.php"><button class="button2">Créer un compte</button></a>
+            <?php endif; ?>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="form-header">
+            <h1>Ajouter une nouvelle propriété</h1>
+            <p>Remplissez le formulaire ci-dessous pour ajouter votre propriété</p>
+        </div>
+
+        <?php if ($error_message): ?>
+            <div class="alert alert-danger">
+                <?php echo htmlspecialchars($error_message); ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($success_message): ?>
+            <div class="alert alert-success">
+                <?php echo htmlspecialchars($success_message); ?>
+            </div>
+        <?php endif; ?>
+
+        <div class="form-container">
+            <form action="add-property.php" method="POST" enctype="multipart/form-data">
+                <div class="form-section">
+                    <h2>Informations générales</h2>
+
+                    <div class="form-group">
+                        <label for="title">Titre de l'annonce *</label>
+                        <input type="text" id="title" name="title" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description *</label>
+                        <textarea id="description" name="description" class="form-control" rows="5" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address">Adresse *</label>
+                        <input type="text" id="address" name="address" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Caractéristiques du logement</h2>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="housing_type">Type de logement *</label>
+                            <select id="housing_type" name="housing_type" class="form-control" required>
+                                <option value="">Sélectionnez</option>
+                                <option value="appartement">Appartement</option>
+                                <option value="maison">Maison</option>
+                                <option value="villa">Villa</option>
+                                <option value="studio">Studio</option>
+                                <option value="autre">Autre</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="area">Superficie (m²) *</label>
+                            <input type="number" id="area" name="area" class="form-control" min="1" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="number_of_rooms">Nombre de pièces *</label>
+                            <input type="number" id="number_of_rooms" name="number_of_rooms" class="form-control" min="1" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="number_of_people">Capacité (personnes) *</label>
+                            <input type="number" id="number_of_people" name="number_of_people" class="form-control" min="1" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Tarification et disponibilité</h2>
+
+                    <div class="form-group">
+                        <label for="price">Prix par nuit (DA) *</label>
+                        <input type="number" id="price" name="price" class="form-control" min="1" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="start_date">Date de début de disponibilité *</label>
+                            <input type="date" id="start_date" name="start_date" class="form-control" min="<?php echo date('Y-m-d'); ?>" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="end_date">Date de fin de disponibilité *</label>
+                            <input type="date" id="end_date" name="end_date" class="form-control" min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Équipements</h2>
+
+                    <div class="amenities-list">
+                        <div class="amenity-item">
+                            <input type="checkbox" id="wifi" name="amenities[]" value="WiFi">
+                            <label for="wifi">WiFi</label>
+                        </div>
+
+                        <div class="amenity-item">
+                            <input type="checkbox" id="tv" name="amenities[]" value="TV">
+                            <label for="tv">TV</label>
+                        </div>
+
+                        <div class="amenity-item">
+                            <input type="checkbox" id="kitchen" name="amenities[]" value="Cuisine équipée">
+                            <label for="kitchen">Cuisine équipée</label>
+                        </div>
+
+                        <div class="amenity-item">
+                            <input type="checkbox" id="washing_machine" name="amenities[]" value="Machine à laver">
+                            <label for="washing_machine">Machine à laver</label>
+                        </div>
+
+                        <div class="amenity-item">
+                            <input type="checkbox" id="air_conditioning" name="amenities[]" value="Climatisation">
+                            <label for="air_conditioning">Climatisation</label>
+                        </div>
+
+                        <div class="amenity-item">
+                            <input type="checkbox" id="heating" name="amenities[]" value="Chauffage">
+                            <label for="heating">Chauffage</label>
+                        </div>
+
+                        <div class="amenity-item">
+                            <input type="checkbox" id="parking" name="amenities[]" value="Parking">
+                            <label for="parking">Parking</label>
+                        </div>
+
+                        <div class="amenity-item">
+                            <input type="checkbox" id="balcony" name="amenities[]" value="Balcon">
+                            <label for="balcony">Balcon</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="other_amenities">Autres équipements</label>
+                        <textarea id="other_amenities" name="other_amenities" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Photos</h2>
+
+                    <div class="form-group">
+                        <label for="photos">Ajouter des photos (max 5)</label>
+                        <input type="file" id="photos" name="photos[]" class="form-control" accept="image/*" multiple>
+                        <small>Formats acceptés: JPG, JPEG, PNG, GIF. Taille maximale: 5 MB par image.</small>
+                    </div>
+
+                    <div class="photo-preview" id="photo-preview"></div>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn-submit">Ajouter la propriété</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle date validation
+            const startDateInput = document.getElementById('start_date');
+            const endDateInput = document.getElementById('end_date');
+            
+            startDateInput.addEventListener('change', function() {
+                const startDate = new Date(this.value);
+                const nextDay = new Date(startDate);
+                nextDay.setDate(nextDay.getDate() + 1);
+                
+                const minDate = nextDay.toISOString().split('T')[0];
+                endDateInput.min = minDate;
+                
+                if (endDateInput.value && new Date(endDateInput.value) <= startDate) {
+                    endDateInput.value = minDate;
+                }
+            });
+            
+            // Handle photo preview
+            const photoInput = document.getElementById('photos');
+            const photoPreview = document.getElementById('photo-preview');
+            
+            photoInput.addEventListener('change', function() {
+                photoPreview.innerHTML = '';
+                
+                if (this.files) {
+                    const maxFiles = 5;
+                    const files = Array.from(this.files).slice(0, maxFiles);
+                    
+                    files.forEach(function(file, index) {
+                        if (file.type.match('image.*')) {
+                            const reader = new FileReader();
+                            
+                            reader.onload = function(e) {
+                                const previewItem = document.createElement('div');
+                                previewItem.className = 'preview-item';
+                                
+                                const img = document.createElement('img');
+                                img.src = e.target.result;
+                                
+                                const removeBtn = document.createElement('div');
+                                removeBtn.className = 'preview-remove';
+                                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                                removeBtn.dataset.index = index;
+                                
+                                previewItem.appendChild(img);
+                                previewItem.appendChild(removeBtn);
+                                photoPreview.appendChild(previewItem);
+                                
+                                removeBtn.addEventListener('click', function() {
+                                    // Note: This doesn't actually remove the file from the input
+                                    // It just hides the preview
+                                    previewItem.remove();
+                                });
+                            };
+                            
+                            reader.readAsDataURL(file);
+                        }
+                    });
+                    
+                    if (this.files.length > maxFiles) {
+                        alert(`Vous ne pouvez télécharger que ${maxFiles} photos maximum.`);
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

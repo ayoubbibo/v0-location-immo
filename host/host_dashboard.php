@@ -32,7 +32,7 @@ while ($row = $properties_result->fetch_assoc()) {
     $photos = explode(',', $row['photos']);
 
     if (strpos($photos[0], 'http') !== 0) {
-        $row['main_photo'] = !empty($photos[0]) ? '../properties/' . $photos[0] : '../images/default.jpg';
+        $row['main_photo'] = !empty($photos[0]) ? '../images/' . $photos[0] : '../images/default.jpg';
     } else {
         $row['main_photo'] = $photos[0];
     }
@@ -110,7 +110,7 @@ while ($row = $notifications_result->fetch_assoc()) {
 <body>
     <nav class="nav-barre">
         <div class="logo-container">
-            <a href="index.php">
+            <a href="../index.php">
                 <img class="Logo" src="../images/LogoBlack.png" alt="Logo" />
             </a>
         </div>
@@ -118,7 +118,7 @@ while ($row = $notifications_result->fetch_assoc()) {
 
         <div>
             <?php if (isLoggedIn()): ?>
-                <a href="../profile/dashboard.php"><button class="button1">Mon Compte</button></a>
+                <a href="../profile/profile_dashboard.php"><button class="button1">Mon Compte</button></a>
                 <a href="../logins/logout.php"><button class="button2">Déconnexion</button></a>
             <?php else: ?>
                 <a href="../logins/connexion.php"><button class="button1">Connexion</button></a>
@@ -247,7 +247,7 @@ while ($row = $notifications_result->fetch_assoc()) {
                 <div class="dashboard-card">
                     <div class="card-header">
                         <h2 class="card-title">Réservations récentes</h2>
-                        <a href="bookings.php" class="card-action">Voir tout</a>
+                        <a href="../profile/bookings.php" class="card-action">Voir tout</a>
                     </div>
 
                     <div class="card-content">
@@ -450,13 +450,13 @@ while ($row = $notifications_result->fetch_assoc()) {
                                 </a>
                             </li>
                             <li style="margin-bottom: 10px;">
-                                <a href="bookings.php" style="display: flex; align-items: center; gap: 10px; color: #4b5563; text-decoration: none;">
+                                <a href="../profile/bookings.php" style="display: flex; align-items: center; gap: 10px; color: #4b5563; text-decoration: none;">
                                     <i class="fas fa-calendar-check"></i>
                                     <span>Gérer les réservations</span>
                                 </a>
                             </li>
                             <li style="margin-bottom: 10px;">
-                                <a href="../profile/edit-profile.php" style="display: flex; align-items: center; gap: 10px; color: #4b5563; text-decoration: none;">
+                                <a href="../profile/edit_profile.php" style="display: flex; align-items: center; gap: 10px; color: #4b5563; text-decoration: none;">
                                     <i class="fas fa-user-edit"></i>
                                     <span>Modifier le profil</span>
                                 </a>
