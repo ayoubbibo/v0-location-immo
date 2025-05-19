@@ -48,7 +48,7 @@ $properties = getAllProperties($conn);
     <div class="auth-buttons">
       <?php if ($logged_in): ?>
         <div class="user-info">
-          <a href="profile/profile_dashboard.php">
+          <a href="profile/profile_dashboard.php" style="text-decoration: none;">
             <button class="button-profile">
               <img src="<?php echo htmlspecialchars($_SESSION['profile_image'] ?? 'images/default-profile.jpg'); ?>" alt="Profile Picture" class="profile-pic" />
               <span><?= htmlspecialchars($_SESSION['username']) ?></span>
@@ -74,17 +74,17 @@ $properties = getAllProperties($conn);
           <label for="address">Destination</label>
           <input type="text" name="address" id="address" placeholder="Où allez-vous ?" />
         </div>
-        
+
         <div class="search-input-group">
           <label for="check_in">Check-in</label>
           <input type="date" name="check_in" id="check_in" />
         </div>
-        
+
         <div class="search-input-group">
           <label for="check_out">Check-out</label>
           <input type="date" name="check_out" id="check_out" />
         </div>
-        
+
         <div class="search-input-group">
           <label for="housing_type">Type de logement</label>
           <select name="housing_type" id="housing_type">
@@ -93,12 +93,12 @@ $properties = getAllProperties($conn);
             <option value="maison">Maison</option>
           </select>
         </div>
-        
+
         <div class="search-input-group">
           <label for="number_of_people">Voyageurs</label>
           <input type="number" name="number_of_people" id="number_of_people" min="1" placeholder="Nombre de personnes" />
         </div>
-        
+
         <div class="search-button-container">
           <button type="submit" class="search-button">
             <i class="fas fa-search"></i>
@@ -117,18 +117,18 @@ $properties = getAllProperties($conn);
       </h3>
       <div class="search-filters" id="search-filters"></div>
     </div>
-    
+
     <div class="search-loading">
       <i class="fas fa-spinner"></i>
       <p>Recherche en cours...</p>
     </div>
-    
+
     <h2>Nos Propriétés Disponibles</h2>
     <div class="property-grid">
       <?php if (!empty($properties)): ?>
         <?php foreach ($properties as $property):
           $photos = explode(',', $property['photos']);
-          $photo = !empty($photos[0]) ? $photos[0] : 'images/default.jpg';      
+          $photo = !empty($photos[0]) ? $photos[0] : 'images/default.jpg';
           $is_favorite = $logged_in ? isPropertyInFavorites($conn, $_SESSION['user_id'], $property['id']) : false;
         ?>
           <div class="property-card">
@@ -162,7 +162,7 @@ $properties = getAllProperties($conn);
         <p>No properties available at the moment.</p>
       <?php endif; ?>
     </div>
-    
+
     <?php
     // Check if there are more properties to load
     $total_properties = countTotalProperties($conn);
@@ -190,7 +190,7 @@ $properties = getAllProperties($conn);
       <img class="img" src="images/comment-proteger-sa-maison-sans-alarme (1).jpg" alt="">
     </div>
   </section>
-  
+
   <div class="mission">
     <div class="text2">
       <div class="titre2">
@@ -226,8 +226,8 @@ $properties = getAllProperties($conn);
 
       <div>
         <h3>CONDITIONS</h3>
-        <p><a href="/conditions">Conditions Générales</a></p>
-        <p><a href="/confidentialite">Politique de Confidentialité</a></p>
+        <p><a href="conditions.php">Conditions Générales</a></p>
+        <p><a href="confidentialite.php">Politique de Confidentialité</a></p>
 
       </div>
 
@@ -247,25 +247,25 @@ $properties = getAllProperties($conn);
           const propertyId = e.target.getAttribute('data-property-id');
           const heartIcon = e.target;
 
-          
+
           fetch('ajax/toggle_favorite.php', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'property_id=' + propertyId
-          })
-          .then(response => response.json())
-          .then(data => {
-            console.error("we are here", propertyId);
-            if (data.success) {
-              heartIcon.classList.toggle('fas');
-              heartIcon.classList.toggle('far');
-            }
-          })
-          .catch(error => {
-            console.error('Error:', error);
-          });
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+              },
+              body: 'property_id=' + propertyId
+            })
+            .then(response => response.json())
+            .then(data => {
+              console.error("we are here", propertyId);
+              if (data.success) {
+                heartIcon.classList.toggle('fas');
+                heartIcon.classList.toggle('far');
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+            });
         <?php else: ?>
           redirectToLogin();
         <?php endif; ?>
@@ -278,17 +278,17 @@ $properties = getAllProperties($conn);
       loadMoreBtn.addEventListener('click', function() {
         const offset = parseInt(this.getAttribute('data-offset'));
         const limit = 6; // Load 6 more properties at a time
-        
+
         fetch('ajax/load_more_properties.php?offset=' + offset + '&limit=' + limit)
           .then(response => response.json())
           .then(data => {
             if (data.success) {
               // Append new properties to the grid
               document.querySelector('.property-grid').insertAdjacentHTML('beforeend', data.html);
-              
+
               // Update offset
               this.setAttribute('data-offset', offset + limit);
-              
+
               // Hide button if no more properties
               if (offset + limit >= <?= $total_properties ?>) {
                 this.style.display = 'none';
@@ -313,7 +313,7 @@ $properties = getAllProperties($conn);
       const sectionTitle = document.querySelector('.proprietes-section h2');
       const loadMoreContainer = document.querySelector('.load-more-container');
 
-     // Set minimum date for check-in to today
+      // Set minimum date for check-in to today
       const today = new Date().toISOString().split('T')[0];
       const checkInInput = document.getElementById('check_in');
       const checkOutInput = document.getElementById('check_out');
@@ -342,57 +342,57 @@ $properties = getAllProperties($conn);
       // Function to update URL with search parameters
       function updateURL(params) {
         const url = new URL(window.location.href);
-        
+
         // Clear existing parameters
         url.search = '';
-        
+
         // Add new parameters
         for (const key in params) {
           if (params[key]) {
             url.searchParams.set(key, params[key]);
           }
         }
-        
+
         // Update browser history without reloading the page
         window.history.pushState({}, '', url);
       }
-      
+
       // Function to get search parameters from URL
       function getSearchParamsFromURL() {
         const params = new URLSearchParams(window.location.search);
         const searchParams = {};
-        
+
         for (const [key, value] of params.entries()) {
           searchParams[key] = value;
         }
-        
+
         return searchParams;
       }
-      
+
       // Function to fill form with URL parameters
       function fillFormWithURLParams() {
         const params = getSearchParamsFromURL();
-        
+
         for (const key in params) {
           const input = document.querySelector(`[name="${key}"]`);
           if (input) {
             input.value = params[key];
           }
         }
-        
+
         // If there are search parameters, perform search
         if (Object.keys(params).length > 0) {
           performSearch(params);
         }
       }
-      
+
       // Fill form with URL parameters on page load
       fillFormWithURLParams();
-      
+
       // Function to display search filters
       function displaySearchFilters(params) {
         searchFilters.innerHTML = '';
-        
+
         const filterLabels = {
           'address': 'Destination',
           'check_in': 'Check-in',
@@ -404,42 +404,42 @@ $properties = getAllProperties($conn);
           'number_of_rooms': 'Rooms',
           'min_rating': 'Rating'
         };
-        
+
         for (const key in params) {
           if (params[key]) {
             let filterValue = params[key];
-            
+
             // // Format housing_type for display
             // if (key === 'housing_type') {
             //   filterValue = filterValue.charAt(0).toUpperCase() + filterValue.slice(1);
             // }
-            
+
             const filterLabel = filterLabels[key] || key;
-            
+
             const filterElement = document.createElement('div');
             filterElement.className = 'search-filter';
             filterElement.innerHTML = `
               <span>${filterLabel}: ${filterValue}</span>
               <i class="fas fa-times" data-filter="${key}"></i>
             `;
-            
+
             searchFilters.appendChild(filterElement);
           }
         }
       }
-      
+
       // Function to perform search
       function performSearch(params) {
         // Show loading state
         searchLoading.style.display = 'block';
         searchOverlay.style.display = 'block';
-        
+
         // Build query string
         const queryString = Object.keys(params)
           .filter(key => params[key])
           .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
           .join('&');
-        
+
         // Fetch search results
         fetch('ajax/search_properties.php?' + queryString)
           .then(response => response.json())
@@ -447,17 +447,17 @@ $properties = getAllProperties($conn);
             // Hide loading state
             searchLoading.style.display = 'none';
             searchOverlay.style.display = 'none';
-            
+
             // Update property grid
             propertyGrid.innerHTML = data.html;
-            
+
             // Update search results info
             if (Object.keys(params).some(key => params[key])) {
               searchResultsInfo.style.display = 'block';
               searchResultsCount.textContent = data.message;
               displaySearchFilters(params);
               sectionTitle.textContent = 'Résultats de recherche';
-              
+
               // Hide load more button for search results
               if (loadMoreContainer) {
                 loadMoreContainer.style.display = 'none';
@@ -465,13 +465,13 @@ $properties = getAllProperties($conn);
             } else {
               searchResultsInfo.style.display = 'none';
               sectionTitle.textContent = 'Nos Propriétés Disponibles';
-              
+
               // Show load more button for all properties
               if (loadMoreContainer) {
                 loadMoreContainer.style.display = 'block';
               }
             }
-            
+
             // Update URL
             updateURL(params);
           })
@@ -481,48 +481,48 @@ $properties = getAllProperties($conn);
             searchOverlay.style.display = 'none';
           });
       }
-      
+
       // Handle search form submission
       searchForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        
+
         const formData = new FormData(searchForm);
         const params = {};
-        
+
         for (const [key, value] of formData.entries()) {
           params[key] = value;
         }
-        
+
         performSearch(params);
       });
-      
+
       // Function to reset search
       window.resetSearch = function() {
         // Clear form
         searchForm.reset();
-        
+
         // Clear URL parameters
         window.history.pushState({}, '', window.location.pathname);
-        
+
         // Reset search
         performSearch({});
       };
-      
+
       // Handle filter removal
       searchFilters.addEventListener('click', function(e) {
         if (e.target.tagName === 'I' && e.target.classList.contains('fa-times')) {
           const filterKey = e.target.getAttribute('data-filter');
           const params = getSearchParamsFromURL();
-          
+
           // Remove the filter
           delete params[filterKey];
-          
+
           // Clear the form field
           const input = document.querySelector(`[name="${filterKey}"]`);
           if (input) {
             input.value = '';
           }
-          
+
           // Perform search with updated params
           performSearch(params);
         }
@@ -530,4 +530,5 @@ $properties = getAllProperties($conn);
     });
   </script>
 </body>
+
 </html>

@@ -149,8 +149,13 @@ function getHostBookings($conn, $host_id, $status = null) {
     while ($row = $result->fetch_assoc()) {
         // Process photos
         $photos = explode(',', $row['photos']);
-        $row['main_photo'] = !empty($photos[0]) ? '../properties/' . $photos[0] : '../images/default.jpg';
         
+        if (strpos($photos[0], 'http') !== 0) {
+            $row['main_photo'] = !empty($photos[0]) ? '../properties/' . $photos[0] : '../images/default.jpg';
+        } else {
+            $row['main_photo'] = $photos[0];
+        }
+
         $bookings[] = $row;
     }
     

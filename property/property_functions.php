@@ -198,8 +198,8 @@ function getPropertiesByOwner($conn, $user_id) {
  * @return string URL of the main photo
  */
 function getMainPhotoUrl($photos) {
-    $photo_array = explode(',', $photos);
-    $photo = !empty($photo_array[0]) ? 'propertiess/' . $photo_array[0] : 'images/default.jpg';
+    $photos = explode(',', $photos);
+    $photo = !empty($photos[0]) ? $photos[0] : 'images/default.jpg';      
     return $photo;
 }
 
@@ -320,10 +320,11 @@ function getUserFavorites($conn, $user_id) {
  * @return int Total number of properties
  */
 function countTotalProperties($conn, $valid_only = true) {
-    $sql = "SELECT COUNT(*) as total FROM properties";
+    $sql = "SELECT COUNT(*) as total FROM properties p 
+            WHERE p.end_date > CURDATE() ";
     
     if ($valid_only) {
-        $sql .= " WHERE validated = 1";
+        $sql .= " AND validated = 1";
     }
     
     $result = $conn->query($sql);
@@ -341,7 +342,7 @@ function countTotalProperties($conn, $valid_only = true) {
  */
 function getPropertyReviews($conn, $property_id) {
     $sql = "SELECT a.*, u.username, u.profile_image 
-            FROM favoris a 
+            FROM reviews a 
             JOIN users u ON a.user_id = u.id 
             WHERE a.property_id = ? 
             ORDER BY a.created_at DESC";

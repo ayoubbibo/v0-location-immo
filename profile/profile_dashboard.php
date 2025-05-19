@@ -25,31 +25,31 @@ $bookings = getUserBookings($conn, $_SESSION['user_id']);
 // Get user reviews
 $reviews = getUserReviews($conn, $_SESSION['user_id']);
 
-// // Get unread messages count
-// $unread_sql = "SELECT COUNT(*) as unread_count 
-//             FROM messages m 
-//             JOIN conversations c ON m.conversation_id = c.id 
-//             WHERE m.receiver_id = ? AND m.is_read = 0";
-// $unread_stmt = $conn->prepare($unread_sql);
-// $unread_stmt->bind_param("i", $_SESSION['user_id']);
-// $unread_stmt->execute();
-// $unread_result = $unread_stmt->get_result();
-// $unread_row = $unread_result->fetch_assoc();
-// $unread_messages = $unread_row['unread_count'];
+// Get unread messages count
+$unread_sql = "SELECT COUNT(*) as unread_count 
+            FROM messages m 
+            JOIN conversations c ON m.conversation_id = c.id 
+            WHERE m.receiver_id = ? AND m.is_read = 0";
+$unread_stmt = $conn->prepare($unread_sql);
+$unread_stmt->bind_param("i", $_SESSION['user_id']);
+$unread_stmt->execute();
+$unread_result = $unread_stmt->get_result();
+$unread_row = $unread_result->fetch_assoc();
+$unread_messages = $unread_row['unread_count'];
 
-// // Get notifications
-// $notifications_sql = "SELECT * FROM notifications 
-//                     WHERE user_id = ? 
-//                     ORDER BY created_at DESC 
-//                     LIMIT 5";
-// $notifications_stmt = $conn->prepare($notifications_sql);
-// $notifications_stmt->bind_param("i", $_SESSION['user_id']);
-// $notifications_stmt->execute();
-// $notifications_result = $notifications_stmt->get_result();
-// $notifications = [];
-// while ($row = $notifications_result->fetch_assoc()) {
-//     $notifications[] = $row;
-// }
+// Get notifications
+$notifications_sql = "SELECT * FROM notifications 
+                    WHERE user_id = ? 
+                    ORDER BY created_at DESC 
+                    LIMIT 5";
+$notifications_stmt = $conn->prepare($notifications_sql);
+$notifications_stmt->bind_param("i", $_SESSION['user_id']);
+$notifications_stmt->execute();
+$notifications_result = $notifications_stmt->get_result();
+$notifications = [];
+while ($row = $notifications_result->fetch_assoc()) {
+    $notifications[] = $row;
+}
 ?>
 
 <!DOCTYPE html>
@@ -70,13 +70,11 @@ $reviews = getUserReviews($conn, $_SESSION['user_id']);
 
 <body>
     <nav class="nav-barre">
-        <div>
+        <div class="logo-container">
             <a href="../index.php">
-                <img class="Logo" src="../images/Logo.png" alt="Logo" />
+                <img class="Logo" src="../images/LogoBlack.png" alt="Logo" />
             </a>
         </div>
-
-
         <div>
             <a href="../index.php"><button class="button1">Acceuil</button></a>
             <a href="../logins/logout.php"><button class="button2">Déconnexion</button></a>
@@ -112,12 +110,12 @@ $reviews = getUserReviews($conn, $_SESSION['user_id']);
             </div>
 
             <div class="dashboard-actions">
-                <a href="edit-profile.php" class="btn-action btn-secondary">
+                <a href="edit_profile.php" class="btn-action btn-secondary">
                     <i class="fas fa-user-edit"></i> Modifier le profil
                 </a>
 
                 <?php if ($user['user_type'] === 'host'): ?>
-                    <a href="../host/dashboard.php" class="btn-action btn-primary">
+                    <a href="../host/host_dashboard.php" class="btn-action btn-primary">
                         <i class="fas fa-home"></i> Espace hôte
                     </a>
                 <?php endif; ?>
@@ -139,27 +137,27 @@ $reviews = getUserReviews($conn, $_SESSION['user_id']);
 
                     <div class="card-content">
                         <div class="stats-grid">
-                            <div class="stat-card">
+                            <a class="stat-card" href="#Reservations">
                                 <div class="stat-value"><?php echo count($bookings); ?></div>
                                 <div class="stat-label">Réservations</div>
-                            </div>
+                            </a>
 
-                            <div class="stat-card">
+                            <a class="stat-card" href="#Reviews">
                                 <div class="stat-value"><?php echo count($reviews); ?></div>
                                 <div class="stat-label">Avis</div>
-                            </div>
-                            <!-- 
-                            <div class="stat-card">
+                            </a>
+                            
+                            <a class="stat-card">
                                 <div class="stat-value"><?php echo $unread_messages; ?></div>
                                 <div class="stat-label">Messages non lus</div>
-                            </div> -->
+                            </a>
                         </div>
                     </div>
                 </div>
 
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h2 class="card-title">Mes réservations</h2>
+                <div class="dashboard-card" id="Reservations">
+                    <div class="card-header" >
+                        <h2 class="card-title" >Mes réservations</h2>
                         <a href="bookings.php" class="card-action">Voir tout</a>
                     </div>
 
@@ -229,7 +227,7 @@ $reviews = getUserReviews($conn, $_SESSION['user_id']);
                                         </div>
 
                                         <div class="booking-actions" style="display: flex; flex-direction: column; justify-content: center; padding: 0 15px;">
-                                            <a href="../booking/booking-details.php?id=<?php echo $booking['id']; ?>" class="btn-action btn-secondary" style="margin-bottom: 10px;">
+                                            <a href="../booking/booking_confirmation.php?id=<?= $booking['id'] ?>" class="btn-action btn-secondary" style="margin-bottom: 10px;">
                                                 <i class="fas fa-eye"></i> Détails
                                             </a>
 
@@ -246,7 +244,7 @@ $reviews = getUserReviews($conn, $_SESSION['user_id']);
                     </div>
                 </div>
 
-                <div class="dashboard-card">
+                <div class="dashboard-card" id="Reviews">
                     <div class="card-header">
                         <h2 class="card-title">Mes avis</h2>
                         <a href="reviews.php" class="card-action">Voir tout</a>
@@ -315,7 +313,7 @@ $reviews = getUserReviews($conn, $_SESSION['user_id']);
                     </div>
 
                     <div class="card-content">
-                        <!-- <?php if (empty($notifications)): ?>
+                        <?php if (empty($notifications)): ?>
                             <div class="empty-state">
                                 <i class="fas fa-bell"></i>
                                 <h3>Aucune notification</h3>
@@ -349,7 +347,7 @@ $reviews = getUserReviews($conn, $_SESSION['user_id']);
                                     </div>
                                 <?php endforeach; ?>
                             </div>
-                        <?php endif; ?> -->
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

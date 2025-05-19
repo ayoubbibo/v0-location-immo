@@ -106,26 +106,35 @@ function updateUserProfile($conn, $user_id, $username, $phone, $profile_image = 
     $sql = "UPDATE users SET username = ?, phone = ?";
     $types = "ss";
     $params = [$username, $phone];
-    
+
     if ($profile_image) {
         $sql .= ", profile_image = ?";
         $types .= "s";
         $params[] = $profile_image;
     }
-    
+
     $sql .= " WHERE id = ?";
     $types .= "i";
     $params[] = $user_id;
-    
+
     $stmt = $conn->prepare($sql);
     $stmt->bind_param($types, ...$params);
-    
+
     if ($stmt->execute()) {
+        // Si la mise à jour réussit, mettre à jour la session
+        if (isset($_SESSION)) {
+            $_SESSION['username'] = $username;
+            $_SESSION['phone'] = $phone;
+            if ($profile_image) {
+                $_SESSION['profile_image'] = $profile_image;
+            }
+        }
         return ['success' => true];
     } else {
         return ['success' => false, 'message' => 'Erreur lors de la mise à jour du profil: ' . $conn->error];
     }
 }
+
 
 function requireLogin() {
     if (!isLoggedIn()) {

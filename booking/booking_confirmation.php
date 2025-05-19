@@ -29,7 +29,25 @@ if (!$booking || $booking['user_id'] != $_SESSION['user_id']) {
 
 // Get property photos
 $photos = explode(',', $booking['photos']);
-$photo = !empty($photos[0]) ? '../annonces/' . $photos[0] : '../images/default.jpg';
+$photo_urls = [];
+foreach ($photos as $photo) {
+    if (!empty($photo)) {
+        if (strpos($photo, 'http') === 0) {
+            $photo_urls[] = $photo;
+        } else {
+            $photo_urls[] = '../properties/' . $photo;
+        }
+    }
+}
+
+// If no photos, use default
+if (empty($photo_urls)) {
+    $photo_urls[] = '../images/default.jpg';
+}
+
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -38,202 +56,12 @@ $photo = !empty($photos[0]) ? '../annonces/' . $photos[0] : '../images/default.j
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Confirmation de réservation - MN Home DZ</title>
-    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="./style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="icon" href="../images/Logo.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
-    <style>
-        .confirmation-container {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 2rem;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        
-        .confirmation-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .confirmation-header h1 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-            color: #4a6ee0;
-        }
-        
-        .confirmation-header p {
-            color: #666;
-            font-size: 1.1rem;
-        }
-        
-        .confirmation-status {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-bottom: 2rem;
-            padding: 1rem;
-            border-radius: 8px;
-            font-weight: 600;
-        }
-        
-        .status-pending {
-            background: #fff3e0;
-            color: #e65100;
-        }
-        
-        .status-confirmed {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-        
-        .status-cancelled {
-            background: #ffebee;
-            color: #c62828;
-        }
-        
-        .booking-details {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-        
-        .property-image {
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        .property-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .booking-info h2 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .booking-info-list {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-        
-        .info-item {
-            margin-bottom: 1rem;
-        }
-        
-        .info-item .label {
-            font-weight: 600;
-            color: #666;
-            margin-bottom: 0.3rem;
-        }
-        
-        .info-item .value {
-            font-size: 1.1rem;
-        }
-        
-        .booking-summary {
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 1px solid #eee;
-        }
-        
-        .booking-summary h3 {
-            font-size: 1.3rem;
-            margin-bottom: 1rem;
-        }
-        
-        .price-details {
-            margin-bottom: 1.5rem;
-        }
-        
-        .price-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-        }
-        
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            font-weight: bold;
-            font-size: 1.2rem;
-            margin-top: 0.5rem;
-            padding-top: 0.5rem;
-            border-top: 1px solid #eee;
-        }
-        
-        .booking-actions {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 2rem;
-        }
-        
-        .action-button {
-            padding: 0.8rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-        }
-        
-        .primary-button {
-            background: #4a6ee0;
-            color: white;
-            border: none;
-        }
-        
-        .primary-button:hover {
-            background: #3a5ecc;
-        }
-        
-        .secondary-button {
-            background: white;
-            color: #4a6ee0;
-            border: 1px solid #4a6ee0;
-        }
-        
-        .secondary-button:hover {
-            background: #f5f7ff;
-        }
-        
-        .danger-button {
-            background: white;
-            color: #c62828;
-            border: 1px solid #c62828;
-        }
-        
-        .danger-button:hover {
-            background: #ffebee;
-        }
-        
-        @media (max-width: 768px) {
-            .booking-details {
-                grid-template-columns: 1fr;
-            }
-            
-            .booking-info-list {
-                grid-template-columns: 1fr;
-            }
-            
-            .booking-actions {
-                flex-direction: column;
-                gap: 1rem;
-            }
-            
-            .action-button {
-                width: 100%;
-            }
-        }
-    </style>
 </head>
 <body>
     <!-- Navigation Bar -->
@@ -242,14 +70,6 @@ $photo = !empty($photos[0]) ? '../annonces/' . $photos[0] : '../images/default.j
             <a href="../index.php">
                 <img class="Logo" src="../images/LogoBlack.png" alt="Logo" />
             </a>
-        </div>
-
-        <div class="nav-links">
-            <ul>
-                <li><a href="../index.php#Accueil">Accueil</a></li>
-                <li><a href="../index.php#Rechercher">Rechercher</a></li>
-                <li><a href="../index.php#Propriétés">Propriétés</a></li>
-            </ul>
         </div>
 
         <div class="auth-buttons">

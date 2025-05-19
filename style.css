@@ -1,31 +1,25 @@
-/* Nettoyage et optimisation du CSS */
-
+/* Reset de base */
 body {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
   margin: 0;
   font-family: 'Nunito', sans-serif;
   background-color: #f7f7f7;
   color: #333;
+  line-height: 1.6;
 }
 
-/* Barre de navigation */
 .nav-barre {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 80px;
-  padding: 0 80px;
+  padding: 1rem 2rem;
   background-color: #fff;
-  border-bottom: 1px solid #ebebeb;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
 }
-
-.logo-container .Logo {
-  height: 32px;
+.logo-container img {
+  height: 40px;
   cursor: pointer;
 }
 
@@ -41,6 +35,8 @@ body {
   color: #222;
   padding: 12px 0;
   position: relative;
+  text-decoration:none;
+
 }
 .nav-links a:after {
   content: "";
@@ -56,61 +52,68 @@ body {
   width: 100%;
 }
 
+
+
+.logo-container img {
+  height: 40px;
+  cursor: pointer;
+}
 .auth-buttons {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 1rem;
 }
-
-.button1,
-.button2 {
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 14px;
+button {
+  border: none;
+  border-radius: 4px;
+  padding: 0.6rem 1.2rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
-  border: none;
+  transition: background-color 0.2s, transform 0.2s;
 }
 .button1 {
-  background-color: transparent;
+  background: transparent;
   color: #222;
 }
 .button1:hover {
-  background-color: #f7f7f7;
+  background: #f0f0f0;
 }
 .button2 {
   background-color: #ff385c;
   color: #fff;
 }
 .button2:hover {
-  background-color: #e31c5f;
+  background-color: #e0314d;
 }
-
 .button-profile {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 5px 5px 5px 12px;
-  border-radius: 21px;
-  border: 1px solid #ddd;
+  gap: 0.75rem;
   background-color: #fff;
-  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 50px;
   transition: box-shadow 0.2s;
 }
 .button-profile:hover {
-  box-shadow: 0 2px 4px rgba(0,0,0,0.18);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 .profile-pic {
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
 }
 .button-profile span {
-  margin-left: 10px;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 1rem;
+}
+
+/* Section principale */
+.page-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
 }
 
 /* Image de fond */
@@ -294,29 +297,55 @@ body {
   font-size: 30px;
 }
 
-/* Image et mission */
+/* Styles pour la section "nous" et autres éléments */
+.nous {
+  margin-top: 80px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.nous .text {
+  flex: 1;
+  padding: 20px;
+}
+.titre {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.titre .ligne {
+  width: 50px;
+  height: 2px;
+  background-color: #ff385c;
+}
+.titre h4 {
+  margin: 0;
+  font-size: 16px;
+  color: #354464;
+}
 .img {
-  border-radius: 40px;
-  margin-right: 50px;
-  width: 700px;
+  max-width: 700px;
+  width: 100%;
   height: 350px;
+  border-radius: 40px;
+  object-fit: cover;
+  margin-left: 20px;
 }
 .mission {
   text-align: center;
-  margin-top: 100px;
-  padding-left: 400px;
-  padding-right: 400px;
-  margin-bottom: 50px;
+  margin: 80px 20px;
 }
 .titre2 {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-left: 35%;
+  justify-content: center;
+  margin-bottom: 20px;
 }
 .titre2 .ligne {
   width: 50px;
-  height: 1.5px;
+  height: 2px;
   background-color: #ff385c;
 }
 .titre2 h4 {
@@ -614,5 +643,71 @@ footer h3 {
   }
   .property-grid {
     grid-template-columns: 1fr;
+  }
+}
+/* Style général */
+.page-container {
+  font-family: 'Nunito', sans-serif;
+  background-color: #f9f9f9;
+  color: #333;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+}
+
+.page-header {
+  background-color: #ff385c;
+  padding: 30px 20px;
+  text-align: center;
+  color: #fff;
+}
+
+.page-header h1 {
+  font-size: 2.5em;
+  margin: 0;
+}
+
+.page-section {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.page-section h2 {
+  color: #ff385c;
+  margin-top: 20px;
+  font-size: 1.8em;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 8px;
+}
+
+.page-section p {
+  margin-top: 15px;
+  font-size: 1.1em;
+}
+
+.page-footer {
+  background-color: #ff385c;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+  margin-top: 40px;
+  font-size: 0.95em;
+}
+
+/* Responsive */
+@media(max-width: 600px) {
+  .page-header h1 {
+    font-size: 2em;
+  }
+  .page-section {
+    margin: 20px;
+    padding: 15px;
+  }
+  .page-section h2 {
+    font-size: 1.5em;
   }
 }
